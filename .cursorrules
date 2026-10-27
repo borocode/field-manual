@@ -1,0 +1,30 @@
+# Field Manual — Cursor Rules & Project Guidelines
+
+You are assisting in the `Projects/field-manual` repository, a curated collection of empirical engineering field notes, hardware reverse-engineering records, and systems administration post-mortems published to `manual.boroghor.com` (Docsify GitHub Pages).
+
+## 1. Core Engineering Invariants
+- **Disk Truth Over Model Confidence:** Never speculate about errors, commands, or measurements. When writing notes or code, anchor everything in verifiable observations and terminal/compiler output.
+- **Privacy & Sanitization First:** Zero private RFC1918 IPs (10.x, 192.168.x, 172.16-31.x), zero local Windows user paths (`C:\Users\<user>\...`), zero private API keys or unencrypted/PGP private keys.
+- **Verification Rule:** Before proposing or committing changes, always run:
+  1. `python scripts/check_sensitive_patterns.py` (Must pass with 0 matches)
+  2. `python scripts/build_llms_txt.py` (Rebuilds `llms.txt` and `llms-full.txt`)
+
+## 2. Note Structure (Mandatory 6-Part Architecture)
+Every note in `notes/*.md` must adhere to this exact structure:
+1. `# Title`
+2. `## Problem` — Exact symptoms, failed approaches, and operational friction.
+3. `## Environment` — OS, hardware architectures, versions, runtime toolchains.
+4. `## What Was Observed` — Concrete diagnostics, measured numbers, disproven hypotheses.
+5. `## What Helped` — Reproducible code/commands, step-by-step resolution, rollback path.
+6. `## Limits` — Machine-specific caveats, edge cases, trade-offs.
+7. `## Related Field Notes` — Reciprocal markdown links to related notes in the repo.
+8. `## Sources & Credit` — Upstream documentation, issue trackers, and specification references.
+
+## 3. Web Reader & Assets
+- **Reader Stack:** Zero-build Docsify (`index.html`, `_sidebar.md`, `.nojekyll`, `CNAME`).
+- **Styling:** Boro terminal aesthetic (`#000000` background, `#39ff14` emerald green headers, `#00ffff` code highlights, monospace font).
+- **CDN Security:** All external scripts/styles in `index.html` must be pinned to exact versions with Subresource Integrity (`sha384`) hashes and `crossorigin="anonymous"`.
+- **Sidebar & Linking:** Sidebar links in `_sidebar.md` use root-relative paths (`/notes/filename.md`). Machine ingestion links use `[llms.txt](llms.txt ':ignore')`.
+
+## 4. Git & Release Conventions
+- Commits must have author `borocode <borocode@users.noreply.github.com>` with UTC `+0000` timestamps (`$env:GIT_AUTHOR_DATE` / `$env:GIT_COMMITTER_DATE`).
