@@ -1,0 +1,5 @@
+# Local untracked blocklist and scratch files
+.local-blocklist.txt
+__pycache__/
+*.pyc
+.DS_Store

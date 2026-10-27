@@ -1,0 +1,26 @@
+# Field Manual
+
+> A curated collection of technical field notes drawn from real debugging, systems administration, and software engineering sessions.
+
+## Published Notes
+
+- [A1236 (iPod Nano 3G) Reverse Engineering & Silicon Bringup](notes/a1236-ipod-nano-3g-reverse-engineering.md)
+- [Agentic Engineering: Managing Long-Running Binary Porting Projects with Handoff & Manifest Files](notes/agent-handoff-and-artifact-gating.md)
+- [Autonomous Agent Monetization: Whop MCP vs. L402 Lightning Tollbooths](notes/agent-monetization-whop-mcp-vs-l402-tollbooths.md)
+- [Android Termux: Native ARM64 Toolchains, Thermal Limits & Wakelocks](notes/android-termux-arm64-toolchain-and-wakelocks.md)
+- [Provenance & Postmortems: Defunct, Halted, and Superseded Tools Across Console Homebrew, P2P Media, and On-Chain Rails](notes/defunct-protocols-and-homebrew-provenance.md)
+- [Headless 24/7 Unattended Disk Unlock (LUKS2 + TPM 2.0)](notes/headless-unattended-disk-unlock-tpm2.md)
+- [Lightning Network Peer Discovery & Gossip Storm Prevention](notes/lightning-network-peer-gossip-management.md)
+- [Cross-Play Minecraft Architecture: Geyser, Bedrock UDP & Reverse Tunneling](notes/minecraft-crossplay-geyser-tunneling.md)
+- [Multi-Agent Relay Architecture: The Cloud Architect to Local Compiler Pattern](notes/multi-agent-relay-architecture.md)
+- [NVENC Hardware Encoding Architecture & Session Starvation](notes/nvenc-hardware-encoding-architecture.md)
+- [OBS Open-Mic Acoustic Audio Alignment via FFT Cross-Correlation](notes/obs-acoustic-audio-alignment.md)
+- [OBS Studio: Cutting Inactive Browser and Media Source Overhead via `obs-websocket`](notes/obs-inactive-browser-and-media-sources.md)
+- [PowerShell: Why `.ProcessorAffinity` Fails with `"The parameter is incorrect"` on Bit 31 (`0x80000000`)](notes/powershell-processor-affinity-sign-extension.md)
+- [Rabbit R1 Hardware Architecture, Bootloader Unlock & GSI Porting](notes/rabbit-r1-bootloader-unlock-and-gsi.md)
+- [Single-GPU Dynamic VFIO Passthrough: Hardware Topology & Driver Rebinding](notes/single-gpu-vfio-passthrough-architecture.md)
+- [Real-Time WebGL Biometric Stream Overlays & Socket Recovery](notes/webgl-hyperate-adrenaline-overlay.md)
+
+## Full Text Ingestion
+
+- [Complete Field Manual (Single File)](llms-full.txt): Complete concatenated text of all notes.

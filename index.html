@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Field Manual — Technical Notes & Provenance</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Technical field notes and provenance records drawn from real debugging, systems administration, and software engineering sessions.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <meta name="theme-color" content="#39ff14">
+  
+  <!-- Docsify Dark Theme base -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4.13.1/lib/themes/dark.css" integrity="sha384-kxJ035EJ2os5w6E9Ysqnvy67DqD2lpcLU1SFJFDxCZCQerjlT0ULLvB+70KWpikn" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+  
+  <!-- Boro Terminal Visual System Styles -->
+  <style>
+    :root {
+      --theme-color: #39ff14;
+      --color-bg: #000000;
+      --color-bg-sidebar: #060606;
+      --color-border: #39ff14;
+      --color-border-dim: #163610;
+      --color-cyan: #00ffff;
+      --color-txt: #dcdcdc;
+      --color-txt-muted: #808080;
+      --mono-font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+      
+      --base-font-family: var(--mono-font);
+      --code-font-family: var(--mono-font);
+      --base-font-size: 14px;
+      --base-line-height: 1.6;
+    }
+
+    body {
+      background-color: var(--color-bg) !important;
+      color: var(--color-txt) !important;
+      font-family: var(--mono-font) !important;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Sidebar terminal styling */
+    .sidebar {
+      background-color: var(--color-bg-sidebar) !important;
+      border-right: 1px solid var(--color-border-dim) !important;
+      font-family: var(--mono-font) !important;
+    }
+
+    .sidebar > h1 a {
+      color: var(--theme-color) !important;
+      font-weight: 700 !important;
+      letter-spacing: -0.5px;
+    }
+
+    .sidebar ul li a {
+      color: var(--color-txt-muted) !important;
+      font-size: 13px !important;
+      transition: color 0.15s ease;
+      border-radius: 0 !important;
+    }
+
+    .sidebar ul li a:hover {
+      color: var(--theme-color) !important;
+      text-decoration: none !important;
+    }
+
+    .sidebar ul li.active > a {
+      color: var(--theme-color) !important;
+      border-left: 2px solid var(--theme-color) !important;
+      padding-left: 10px !important;
+      font-weight: 600;
+    }
+
+    /* Content Area */
+    .content {
+      background-color: var(--color-bg) !important;
+    }
+
+    .markdown-section {
+      max-width: 860px !important;
+      padding: 30px 40px !important;
+    }
+
+    .markdown-section h1,
+    .markdown-section h2,
+    .markdown-section h3,
+    .markdown-section h4 {
+      color: #ffffff !important;
+      font-family: var(--mono-font) !important;
+      font-weight: 700 !important;
+      letter-spacing: -0.5px;
+      border-bottom: 1px solid var(--color-border-dim) !important;
+      padding-bottom: 8px;
+    }
+
+    .markdown-section h1 {
+      color: var(--theme-color) !important;
+      border-bottom: 2px solid var(--color-border) !important;
+    }
+
+    .markdown-section h2 {
+      margin-top: 35px;
+    }
+
+    .markdown-section a {
+      color: var(--theme-color) !important;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .markdown-section a:hover {
+      color: var(--color-cyan) !important;
+    }
+
+    /* Code & Pre */
+    .markdown-section code {
+      background-color: #111111 !important;
+      color: var(--color-cyan) !important;
+      border: 1px solid #222222 !important;
+      border-radius: 0 !important;
+      font-family: var(--mono-font) !important;
+      font-size: 12.5px !important;
+      padding: 2px 5px !important;
+    }
+
+    .markdown-section pre[data-lang] {
+      background-color: #080808 !important;
+      border: 1px solid #222222 !important;
+      border-left: 3px solid var(--color-border) !important;
+      border-radius: 0 !important;
+      padding: 15px !important;
+      margin: 18px 0 !important;
+    }
+
+    .markdown-section pre[data-lang] code {
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+      color: #e6e6e6 !important;
+    }
+
+    /* Blockquotes */
+    .markdown-section blockquote {
+      background-color: #061104 !important;
+      border-left: 3px solid var(--color-border) !important;
+      color: #b8e6b0 !important;
+      margin: 18px 0 !important;
+      padding: 12px 18px !important;
+      border-radius: 0 !important;
+    }
+
+    /* Tables */
+    .markdown-section table {
+      border-collapse: collapse !important;
+      border: 1px solid #222222 !important;
+      width: 100% !important;
+      margin: 20px 0 !important;
+      font-size: 13px;
+    }
+
+    .markdown-section th {
+      background-color: #0d0d0d !important;
+      color: var(--theme-color) !important;
+      border: 1px solid #222222 !important;
+      padding: 8px 12px !important;
+      font-weight: 600;
+      text-align: left;
+    }
+
+    .markdown-section td {
+      border: 1px solid #1a1a1a !important;
+      padding: 8px 12px !important;
+      background-color: #040404 !important;
+    }
+
+    .markdown-section tr:nth-child(2n) td {
+      background-color: #080808 !important;
+    }
+
+    /* Search Input */
+    .search input {
+      background-color: #0a0a0a !important;
+      border: 1px solid var(--color-border-dim) !important;
+      color: var(--color-txt) !important;
+      border-radius: 0 !important;
+      font-family: var(--mono-font) !important;
+      font-size: 12.5px !important;
+      padding: 8px 12px !important;
+    }
+
+    .search input:focus {
+      border-color: var(--color-border) !important;
+      outline: none;
+    }
+
+    .search .matching-post {
+      border-bottom: 1px solid #1a1a1a !important;
+    }
+
+    /* Copy code button */
+    .docsify-copy-code-button {
+      background-color: #111111 !important;
+      color: var(--theme-color) !important;
+      border: 1px solid var(--color-border-dim) !important;
+      border-radius: 0 !important;
+      font-family: var(--mono-font) !important;
+      font-size: 11px !important;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .docsify-copy-code-button:hover {
+      background-color: var(--theme-color) !important;
+      color: #000000 !important;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #000000;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1a4a10;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #39ff14;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">Loading Field Manual...</div>
+
+  <script>
+    window.$docsify = {
+      name: '<span style="color:#39ff14; font-weight:800;">⚡ FIELD MANUAL</span>',
+      repo: 'https://github.com/borocode/field-manual',
+      loadSidebar: true,
+      relativePath: true,
+      auto2top: true,
+      subMaxLevel: 3,
+      search: {
+        maxAge: 86400000,
+        paths: 'auto',
+        placeholder: 'Search field notes...',
+        noData: 'No matching records.',
+        depth: 4
+      },
+      copyCode: {
+        buttonText: 'COPY',
+        errorText: 'ERROR',
+        successText: 'COPIED'
+      }
+    };
+  </script>
+
+  <!-- Docsify Core (Pinned with SRI) -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4.13.1/lib/docsify.min.js" integrity="sha384-KaHhgnx/OTLoJ4J33SSJsF4x1pk4I7q3s5ZOfIDHJYl6IG7Oyn2vNDsHiWJe46fD" crossorigin="anonymous"></script>
+  <!-- Search Plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4.13.1/lib/plugins/search.min.js" integrity="sha384-LthJPBJ4RGco78kBY+EmKz5rmISZ5vrtAu3+l2ALQ2mrZHOe6Wyf6knyKjeC4cL6" crossorigin="anonymous"></script>
+  <!-- Copy Code Plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2.1.1/dist/docsify-copy-code.min.js" integrity="sha384-t4d9b4/0dEBkoJ5e77XEPBrqJ790jbFQFmEaTbBqIlTDeGosM1AbZvC1NQwqTg+5" crossorigin="anonymous"></script>
+
+  <!-- Prism Syntax Highlighters (Pinned with SRI) -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js" integrity="sha384-9WmlN8ABpoFSSHvBGGjhvB3E/D8UkNB9HpLJjBQFC2VSQsM1odiQDv4NbEo+7l15" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-powershell.min.js" integrity="sha384-xbI9krqyYp4npK9Cn94XyNoSR+TYZKddrk0NUVZ44zZ+OVpKz/LL0U1PB0MjR7Vx" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-python.min.js" integrity="sha384-WJdEkJKrbsqw0evQ4GB6mlsKe5cGTxBOw4KAEIa52ZLB7DDpliGkwdme/HMa5n1m" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-json.min.js" integrity="sha384-RhrmFFMb0ZCHImjFMpR/UE3VEtIVTCtNrtKQqXCzqXZNJala02N3UbVhi+qzw3CY" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-c.min.js" integrity="sha384-gaD4ncierlmWk42Z3BmTp37/z+Dqt8V4Wf74UjTvFeo+M+SgnEI6Ysd98pWhksQv" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-cpp.min.js" integrity="sha384-NiOrAquf32LSG3Vuig99LKS03EZPUuM8a51NOp+XXsqx08hUVo3wbNWALY7K/2J8" crossorigin="anonymous"></script>
+
+  <!-- KaTeX Math Rendering (Pinned with SRI) -->
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-katex@1.4.4/dist/docsify-katex.js" integrity="sha384-ZT34W8Z/40OJ0PT4L7iV9s+sbiBFWDySK9muVEySRbU35qokEw8BolU48wzsb2S/" crossorigin="anonymous"></script>
+
+  <!-- Mermaid Sequence Diagrams (Pinned with SRI) -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" integrity="sha384-WmdflGW9aGfoBdHc4rRyWzYuAjEmDwMdGdiPNacbwfGKxBW/SO6guzuQ76qjnSlr" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-mermaid@2.0.1/dist/docsify-mermaid.js" integrity="sha384-U2Wy2Wa3grc0soLXlky3iZWvD6N5p3o+Udi8RpPWlbscpUEfi7RuQHzMmSstkHou" crossorigin="anonymous"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'dark' });</script>
+</body>
+</html>

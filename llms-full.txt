@@ -1,0 +1,1650 @@
+# Field Manual — Complete Collection
+
+> All published notes and technical field guides in a single consolidated document for LLM ingestion and offline reference.
+
+---
+
+# Field Manual
+
+A collection of technical field notes drawn from real debugging, systems administration, and software engineering sessions.
+
+Each note documents a specific problem where the root cause or working fix was non-obvious, written so that:
+1. **Humans** can quickly see what failed, what was measured, what helped, and where the caveats are.
+2. **Coding agents** can use the notes as structured reference material when troubleshooting similar symptoms.
+
+> **Scope & Safety Notice:** These notes record observations from specific machines and project setups. They are reference material, not universal rules, and should never override your own security policies, backups, or verification steps. Unconfirmed hypotheses or single-machine workarounds are explicitly labeled.
+
+---
+
+## Note Format
+
+Every note in `notes/` follows a six-part structure:
+
+1. **The Problem** — What we were trying to do and the failure or symptom we hit.
+2. **Environment** — Relevant OS, runtime, hardware, and software versions.
+3. **What Was Observed** — Exact errors, measurements, and disproven hypotheses.
+4. **What Helped** — Reproducible steps, commands, and rollback instructions.
+5. **Limits** — What was only tested on one machine, side effects, and edge cases.
+6. **Sources & Credit** — Upstream documentation, tools, and license details.
+
+---
+
+## Index of Notes
+
+### Hardware & Reverse Engineering
+* [**Android Termux: Native ARM64 Toolchains, Thermal Limits & Wakelocks**](notes/android-termux-arm64-toolchain-and-wakelocks.md)  
+  Compiling C/C++ runtimes directly on Android without root, managing OS Doze mode freezes via `termux-wake-lock`, and thread partitioning across heterogeneous big.LITTLE core clusters to prevent thermal throttling.
+* [**iPod Nano 3G (A1236) Reverse Engineering & Silicon Bringup**](notes/a1236-ipod-nano-3g-reverse-engineering.md)  
+  Samsung `S5L8702` silicon self-identification vs marketed `S5L8701`, SecureROM DFU exploit via `wInd3x`, the 256 KB DFU transfer buffer boundary, and mapping FMC NAND registers for physical hardware execution.
+* [**Rabbit R1 Hardware Architecture, Bootloader Unlock & GSI Porting**](notes/rabbit-r1-bootloader-unlock-and-gsi.md)  
+  Bypassing vendor cloud tokens via MediaTek MT6765 BROM exploit (`mtkclient`), disabling AVB 2.0 (`dm-verity`), flashing Project Treble ARM64 A/B GSIs, and driving the 360° motorized camera via GPIO daemon.
+* [**Provenance & Postmortems: Defunct, Halted, and Superseded Tools**](notes/defunct-protocols-and-homebrew-provenance.md)  
+  Historical lineage across console homebrew (Switch CFW `MOD0` `LNY2` TLS breaks and memory pool exhaustion), P2P media dead tracker backoffs, August 2026 swap halts, and empirical bonding-curve sniper audits.
+
+### Broadcast, GPU & Acoustic Engineering
+* [**NVENC Hardware Encoding Architecture & Session Starvation**](notes/nvenc-hardware-encoding-architecture.md)  
+  Diagnosing driver session exhaustion (`NV_ENC_ERR_OUT_OF_MEMORY`), Twitch Enhanced Broadcasting multi-track GPU allocation, zombie encoder handle leaks during socket renegotiation, and `nvidia-smi encodersessions` forensics.
+* [**OBS Open-Mic Acoustic Audio Alignment via FFT Cross-Correlation**](notes/obs-acoustic-audio-alignment.md)  
+  Sub-millisecond desktop/mic alignment (+8 ms Desktop / 0 ms Mic) using audio chirp testing, resolving live timestamp discontinuities via FFmpeg `aresample` PTS reconstruction, and eliminating speaker bleed without aggressive noise gates.
+* [**OBS Studio: Inactive Browser & Media Source Overhead via `obs-websocket`**](notes/obs-inactive-browser-and-media-sources.md)  
+  Auditing and toggling `shutdown` (browser) and `close_when_inactive` (media) across large scene collections over WebSocket v5, dropping memory by over 2 GB without breaking alert or WebRTC streams.
+* [**Real-Time WebGL Biometric Stream Overlays & Socket Recovery**](notes/webgl-hyperate-adrenaline-overlay.md)  
+  Handling silent WebSocket telemetry deadlocks when keep-alive heartbeats continue but metrics freeze, 90-second watchdog resets, and scene group alpha compensation.
+
+### Systems, Networks & Infrastructure
+* [**Single-GPU Dynamic VFIO Passthrough: Hardware Topology & Driver Rebinding**](notes/single-gpu-vfio-passthrough-architecture.md)  
+  Architectural breakdown of dynamic single-GPU passthrough on Linux (AMD Ryzen 9 5950X / NVIDIA RTX 3080 Ti): display manager teardown, driver unbinding/rebinding hooks, dual-CCD CCX cache latency isolation, and raw NVMe VirtIO boot without dual-booting.
+* [**Headless 24/7 Unattended Disk Unlock (LUKS2 + TPM 2.0)**](notes/headless-unattended-disk-unlock-tpm2.md)  
+  Configuring `systemd-cryptenroll` with Limine UKI on NVMe root, configuring PCR 7 Secure Boot and signed UKI policy while avoiding raw PCR 4/9 kernel upgrade lockout traps, and verifying passphrase validation non-destructively in userland.
+* [**Cross-Play Minecraft Architecture: Geyser, Bedrock UDP & Reverse Tunneling**](notes/minecraft-crossplay-geyser-tunneling.md)  
+  Bridging Java TCP and Bedrock UDP (RakNet/NetherNet) via PaperMC, Geyser, and Floodgate in Docker; reverse TCP tunneling with DNS SRV records; and local LAN discovery on consoles without Xbox Live auth.
+* [**Lightning Network Peer Discovery & Gossip Storm Prevention**](notes/lightning-network-peer-gossip-management.md)  
+  Preventing BoltDB memory churn and OOM crashes on SBCs (Raspberry Pi) via staggered rate-limited peering (2.5s pacing) and multi-mirror Mempool explorer failover.
+* [**PowerShell: Why `.ProcessorAffinity` Fails on Bit 31 (`0x80000000`)**](notes/powershell-processor-affinity-sign-extension.md)  
+  Resolving `SetValueInvocationException: "The parameter is incorrect"` in 64-bit PowerShell when setting affinity masks above `0x7FFFFFFF`, explaining `Int32` sign-extension bugs, and providing the `0xC0000000L` fix.
+
+### Autonomous Agent Workflows
+* [**Autonomous Agent Monetization: Whop MCP vs. L402 Lightning Tollbooths**](notes/agent-monetization-whop-mcp-vs-l402-tollbooths.md)  
+  Comparing agent-first Web2 platforms (Whop MCP, two-phase commit tokens, raw `.md` mirrors) against crypto-native M2M micropayments (L402 Lightning tollbooths); real-world liquidity findings from 600+ payment challenges; and data rights/ToS invariants.
+* [**Multi-Agent Relay Architecture: The Cloud Architect to Local Compiler Pattern**](notes/multi-agent-relay-architecture.md)  
+  Eliminating hallucinated pull requests by pairing cloud API authoring with local host compiler verification (`cargo check` / `cargo test` borrow-checker catches), backed by the invariant of "disk truth over model confidence."
+* [**Agentic Engineering: Managing Long-Running Binary Porting Projects**](notes/agent-handoff-and-artifact-gating.md)  
+  State-management patterns from multi-week recompilation projects: SHA-256 build manifests, embedded runtime markers, and capping diagnostic logs to prevent rebuild thrashing loops.
+
+---
+
+## Pre-Publication Review Checklist
+
+Automated pattern scanning (`python scripts/check_sensitive_patterns.py`) is included **only as a secondary lint check**. Before pushing any commit to a public remote, perform a manual review of:
+1. **Filenames and directory structure** (`git status --ignored`, `git ls-files`)
+2. **Full text of every note** (checking for prose that identifies private infrastructure, account names, or third-party confidential data)
+3. **Git commit metadata and history** (`git log --stat -p`, `git log --format="%an <%ae>"`)
+
+---
+
+# A1236 (iPod Nano 3G) Reverse Engineering & Silicon Bringup
+
+## Problem
+The Apple iPod Nano 3rd Generation (Model `A1236` / `MB261`, colloquially known as the "Fat Nano") was historically abandoned by open-source firmware projects (such as `freemyipod`) around 2010. While the 1st and 2nd generation Nanos and the 5.5G/6G Classics received custom bootloaders and Rockbox support, the 3G remained unsupported due to:
+1. Undocumented Flash Memory Controller (FMC) hardware registers.
+2. A lack of publicly documented register-level differences between the advertised `S5L8701` SoC and the actual silicon.
+3. Strict USB Device Firmware Upgrade (DFU) image transfer limits in SecureROM that abort attempts to directly inject large custom kernels into RAM.
+
+## Environment
+* **Target Device:** Apple iPod Nano 3rd Generation (`A1236`, EMC 2174, 4GB/8GB NAND).
+* **SoC:** Samsung Application Processor (ARM926EJ-S r5 core).
+* **Host Toolchain:** Linux / WSL2 environment with `arm-none-eabi-gcc` (9.2.1+), `libusb-1.0`, and `usbipd-win` for USB passthrough from Windows.
+* **Exploit Framework:** `wInd3x` DFU payload injector.
+
+## What Was Observed
+
+### 1. Silicon Identification vs. Marketing Documentation
+Marketing literature and service teardowns designated the chip as Samsung `S5L8701`. However, querying the chip register space and dumping the 64 KB SecureROM revealed the hardware identifier:
+
+```text
+BootROM Signature: 87020000000001
+Silicon Readback:  S5L8702 Rev.0
+```
+
+The device shares its core processor memory map and peripheral definitions with the iPod Classic 6G (`S5L8702`), but interfaces with raw multi-level cell NAND flash like the Nano 2G (`S5L8700`), making generic Classic 6G builds incompatible without low-level driver shims.
+
+### 2. USB DFU 256 KB Buffer Constraint
+When injecting a custom kernel directly over USB DFU mode, image uploads exceeding 256 KB (`0x40000` bytes) failed consistently at chunk 129 with USB status 3 (`errWRITE` / stall). The Apple SecureROM staging buffer in internal SRAM (IRAM) allocated for DFU transfers has a hard 256 KB upper bound:
+
+```text
+Host -> DFU_DNLOAD (Chunk 1..128)  -> ACK
+Host -> DFU_DNLOAD (Chunk 129)     -> STALL (Pipe Error / errWRITE)
+```
+
+Attempting to upload a full monolithic OS image (e.g. 5–9 MB binary) directly via DFU is fundamentally rejected by the bootrom hardware window.
+
+## What Helped
+
+### 1. Two-Stage Boot Architecture
+To bypass the 256 KB DFU limitation:
+1. **Stage 1 Payload (< 64 KB):** A minimal tethered RAM bootloader was compiled strictly under 64 KB. This payload is uploaded via DFU into internal SRAM (`0x22000000`) and executed.
+2. **Hardware Initialization in RAM:** The Stage 1 bootloader initializes the system PLLs, clock gates, display controller, and clickwheel ADC, rendering an interactive development menu directly from memory.
+3. **Stage 2 Target Architecture:** Stage 1 is designed to initialize the FMC NAND flash controller and load the larger secondary operating system binary from the onboard FAT32 partition once the Flash Translation Layer (FTL) driver integration is complete.
+
+### 2. Verified Peripheral Register Map
+Through hardware spew analysis and register probing, the following subsystem base addresses were mapped and verified on physical hardware:
+
+| Subsystem | Base Address | Verified Details & Behavior |
+| :--- | :--- | :--- |
+| **BootROM** | `0x00000000` | 64 KB Apple SecureROM (`0x00000000 - 0x0000FFFF`). |
+| **Internal SRAM (IRAM)** | `0x22000000` | 256 KB internal memory buffer for tethered DFU staging. |
+| **External SDRAM** | `0x08000000` | 32 MB system RAM base. |
+| **Display Controller** | S5L8702 LCD Controller | Readback Silicon ID: `0x71915800` (`lcd type: 4`). 320x240 RGB. |
+| **Clock Generator** | `0x3C500000` (`CLKGEN`) | `GATES1: 0x00019013` (Bit 8: NAND clock gate; LCD gate enabled). |
+| **Flash Controller** | `0x39400000` (`FMC_BASE`) | 8-bit NAND bus with hardware ECC engine. |
+| **DMA Engine** | PL080 DMA | Dual-channel DMA for high-speed audio and storage buffers. |
+
+### 3. Peripheral Initialization Sequence
+* **LCD Engine:** The 320x240 LCD controller requires setting pixel clock divider registers before writing framebuffers. Once un-gated, text and bitmap buffers render without visual tearing.
+* **Clickwheel ADC:** Clickwheel touch sliders communicate over the internal ADC lines, while physical button clicks (`SELECT`, `MENU`, `PLAY`, `PREV`, `NEXT`) trigger discrete GPIO line interrupts.
+* **Piezo Audio:** The onboard clicker is driven via a dedicated PWM frequency register, enabling audible boot chime feedback before the main audio DAC is initialized.
+
+## Limits
+* **NAND Flash Translation Layer (FTL):** While raw read/write access to the FMC register space is operational, Samsung's proprietary wear-leveling algorithms require careful block allocation to prevent corrupting the stock Apple firmware partition tables.
+* **Tethered Boot:** Executing code in RAM via DFU requires a USB host upon every cold power cycle unless written directly to the NOR/NAND boot sector.
+
+## Related Field Notes
+* [Rabbit R1 Hardware Architecture, Bootloader Unlock & GSI Porting](rabbit-r1-bootloader-unlock-and-gsi.md) — Low-level BootROM exploits and peripheral driver bringup.
+* [Provenance & Postmortems: Defunct Tools & Protocols](defunct-protocols-and-homebrew-provenance.md) — Historical hardware lineage and reverse-engineering provenance.
+
+## Sources & Credit
+* [freemyipod archive documentation](https://freemyipod.org/) for S5L8700 / S5L8702 reverse engineering.
+* [wInd3x USB DFU exploit engine](https://github.com/freemyipod/wInd3x).
+* [usbipd-win project](https://github.com/dorssel/usbipd-win) for USB device virtualization across Windows and WSL2.
+
+---
+
+# Agentic Engineering: Managing Long-Running Binary Porting Projects with Handoff & Manifest Files
+
+## 1. The Problem
+During a multi-week static binary recompilation and porting project (translating a legacy PowerPC binary into C/AArch64 and debugging its custom graphics pipeline across an emulator and physical target hardware), a single coding-agent thread ran across **140,000+ JSONL log lines (~1.99 GB on disk)** and grew to roughly **197,000 input tokens per turn**.
+
+As the project accumulated dozens of experimental ~75 MB binaries and multi-hundred-megabyte runtime trace logs, three operational failures kept recurring:
+1. **Ambiguous Binary Identity:** Both the emulator and target device UI displayed the embedded application metadata string (`v0.1.0`) rather than the filename. When multiple diagnostic builds were staged, neither the human operator nor a new agent session could tell from a window screenshot which binary was actually running.
+2. **Stale Handoff Files:** Older summary files (`CURRENT_STATUS.md`, `STATUS.md`) remained in the root directory after newer work moved to `HANDOFF.md`. When a second agent inspected the workspace or parsed the pre-fork session log, it read the older status file and recommended running a week-old diagnostic build that had already been superseded.
+3. **Unbounded Runtime Logs & Unverified Rebuilds:** Early diagnostic builds wrote over **227 MB (`2,000,000+` lines)** to the shared `runtime-startup.log` file on the target SD path, making log inspection slow and tempting agents to compile new speculative builds before verifying whether the previous staged build had actually been executed.
+
+## 2. Environment
+* **Workflow:** Multi-session collaboration between a human operator and local coding agents working in a shared project directory
+* **Build Artifacts:** Cross-compiled AArch64 binaries (~75 MB each) deployed to both a local desktop emulator and a physical target over LAN/FTP
+* **Host OS:** Windows 11 with MSYS2 / devkitA64 cross-compilation toolchain and CMake/CTest host regression tests
+
+## 3. What Was Observed
+* **Context Size vs. State Clarity:** Even with a 258K-token context window and prompt caching (~2.93B cumulative cached input tokens over 6 weeks, ~68.3M active goal tokens), a huge conversation history did not prevent state confusion—and on fixed-price subscription tiers, sending ~197K input tokens per tool call rapidly exhausted rolling 5-hour rate limits.
+* **Filename Collisions:** Overwriting a single `app.bin` path during iterative experiments made it impossible to correlate historical runtime log segments with the exact compiler flags or source patches that produced them, especially if the emulator still held a file lock on the binary during packaging.
+* **Host Test Drift:** Relying on cached `CTest` metadata failed when directory paths shifted, whereas running the compiled host test executables directly via a tiny wrapper script succeeded deterministically.
+
+## 4. What Helped
+
+### 1. Maintain One Authoritative `HANDOFF.md` + `BUILD_MANIFEST.md` (and Deprecate Old Status Files)
+Instead of relying on chat history or scattering multiple `STATUS.md` / `CURRENT_STATUS.md` files in the repo root, keep **two canonical files** and explicitly mark any older notes as historical at the top:
+
+* **`BUILD_MANIFEST.md`:** A table mapping every built candidate's **Label**, **Purpose/Flags**, **Exact Staged Path**, and **SHA-256 hash**.
+  ```markdown
+  | Label | Purpose | Staged Path | SHA-256 |
+  | :--- | :--- | :--- | :--- |
+  | `visual-baseline-20261023` | Known-good visual baseline; do not overwrite | `build/baseline/app-baseline.bin` | `7D0FB4F5...` |
+  | `vtxfast-prof-20261025` | Fast vertex decode + `PERF_PROFILE=1` timers | `build/vtxfast-prof/app-vtxfast-prof.bin` | `CD553ECE...` |
+  ```
+* **`HANDOFF.md`:** Records the **Current Verified Baseline** (with measured metrics), **Rejected Experiments** (and why they failed, so the next agent session never repeats them), and the **Single Next Measurement Gate**.
+
+### 2. Embed Distinct Build Markers in Both Metadata and Runtime Logs
+Never rely on a generic `v0.1.0` title or a filename alone to prove which binary is running:
+1. Set a distinct visible title/version string in the binary's packaging metadata (e.g., `v0.1.0-rdiag`, `v0.1.0-vtxfast`) so launcher menus and window titles are unambiguous.
+2. Print an explicit `build=<label>` line at the start of every runtime log session and require the agent to verify that marker before attributing performance counters to a candidate.
+3. Verify both **file size and SHA-256** after packaging (packaging or linker exit code `0` alone is not proof that the target file was updated, especially if an emulator has the file open).
+
+### 3. Cap Per-Launch Diagnostic Logs in Code
+To prevent a slow or stuck run from writing 200+ MB logs that choke agent file readers and SD cards:
+* Enforce a hard per-launch byte/line cap (for example, **2 MiB per launch**) in the runtime logger, followed by a single `cap_reached` marker.
+* For high-frequency events (such as renderer draw rejections), log only sparse checkpoints (e.g., the first 8 occurrences, powers of two, and every $16,384\text{th}$ occurrence) rather than every frame.
+
+### 4. Gate Next Builds on Measured Runtime Evidence
+Write an explicit rule in `HANDOFF.md`:
+> *"Do not compile or stage another optimization candidate until the currently staged build has been verified via its `build=` runtime marker in a settled test window."*
+
+If the test requires manual user input or hardware access that is currently unavailable, pause the agent goal rather than letting an automated continuation loop poll unchanged log files.
+
+### 5. Rotate Threads + Split Model Tiers by Task
+* When a thread's per-turn input context grows past ~50K–100K tokens, start a fresh thread seeded with `HANDOFF.md` and `BUILD_MANIFEST.md` (or use `/compact` and verify the retained summary against those two files).
+* Use a lower-cost model tier for routine build/log/test commands, reserving frontier reasoning models for the specific turns that design or debug complex code changes.
+
+## 5. Limits
+* **Manual Discipline Required:** A `HANDOFF.md` file only works if old summary files (`CURRENT_STATUS.md`, etc.) are either deleted, archived into a `history/` subfolder, or updated to point directly to `HANDOFF.md`. Having two competing status files in the root directory is worse than having none.
+* **Source Tree Snapshots without Git:** In projects that are not tracked in Git (or contain large generated C chunks), restoring the working tree after a rejected experiment requires saving explicit source snapshots (`src-<candidate>/`) alongside the binary in `build/` and verifying hashes before and after each test.
+* **Quota Math Varies by Provider:** Token usage reported by local session logs (`total_tokens` including cached prefixes) and token usage reported by provider goal trackers (uncached + output tokens) measure different quantities, and neither maps 1:1 to undocumented subscription rate-limit formulas.
+
+## Related Field Notes
+* [Multi-Agent Relay Architecture: The Cloud Architect to Local Compiler Pattern](multi-agent-relay-architecture.md) — Multi-agent compiler loops, context isolation, and disk truth.
+* [Autonomous Agent Monetization: Whop MCP vs. L402 Lightning Tollbooths](agent-monetization-whop-mcp-vs-l402-tollbooths.md) — Agent tool harnesses and operational boundaries.
+* [Provenance & Postmortems: Defunct Tools & Protocols](defunct-protocols-and-homebrew-provenance.md) — Preserving build provenance across long-term development lifecycles.
+
+## 6. Sources & Credit
+* [NIST FIPS 180-4 Secure Hash Standard](https://csrc.nist.gov/pubs/fips/180-4/upd1/final) (SHA-256).
+* Synthesized from multi-agent static binary recompilation and hardware debugging sessions.
+
+---
+
+# Autonomous Agent Monetization: Whop MCP vs. L402 Lightning Tollbooths
+
+## Problem
+Developers building autonomous AI agents, developer tooling, and specialized APIs face an architectural dilemma when attempting to charge for access:
+1. **Web2 Friction vs. Agent Autonomy:** Traditional payment gateways (Stripe, PayPal, Gumroad) rely on interactive human browser sessions, CAPTCHAs, 3D Secure SMS codes, and manual credit card inputs, preventing autonomous agents from purchasing API access programmatically.
+2. **Crypto-Native Micropayments vs. Buyer Liquidity:** Protocols like **L402** (formerly LSAT, combining HTTP 402 Payment Required with Bitcoin Lightning Network macaroons) provide mathematically elegant machine-to-machine settlement, but suffer from an acute buyer liquidity shortage in the wild.
+3. **Data Licensing & Upstream ToS Risks:** Monetizing agents by wrapping third-party data feeds (e.g. scraped exchange orderbooks, token signals, or social metrics) violates upstream Terms of Service and invites API suspension.
+
+## Environment
+* **Platform A (Web2 Agent-First):** Whop Developer Platform (Docs MCP, API MCP, Agent Skill manifests, REST/Webhooks).
+* **Platform B (Crypto-Native M2M):** Autonomous L402 Lightning Tollbooth gateway (`swarm-tollbooth`, FastAPI middleware, LND Lightning Daemon).
+* **Client Runtimes:** Autonomous coding agents (Claude Code, Antigravity, OpenClaw, Cursor) consuming Model Context Protocol (MCP) servers.
+
+## What Was Observed
+
+### 1. The L402 Machine-to-Machine Liquidity Reality Check
+In production testing on our own gateway setup (August–September 2026), evaluating an L402 paywall issuing per-request Lightning invoices for automated telemetry feeds:
+* Over **600+ HTTP 402 payment challenges** were logged across inbound requests and bot scrapers.
+* **Total external settlement collected: $0.**
+* **Root Cause:** Outside of controlled laboratory test harnesses, autonomous AI agents roaming the web today do not possess funded Lightning Network nodes or pre-authorized cryptographic payment policies. The infrastructure exists, but buyer liquidity is near-zero.
+
+```text
+[Client Agent] ──GET /v1/feed──> [L402 Tollbooth]
+                                      │
+[402 Payment Required] <──────────────┴── (Macaroon + Lightning Invoice)
+        │
+        ▼
+(Client agent lacks funded LN node / payment policy -> Request aborted)
+```
+
+### 2. Whop's Agent-First Architecture & Two-Phase Commits
+Whop designed its developer surface specifically for AI coding agents, introducing unique architectural patterns:
+* **Direct Markdown Endpoints:** Every documentation page provides a raw markdown representation by appending `.md` (e.g. `https://docs.whop.com/developer/quickstart.md`), allowing agents to ingest specifications without HTML scraping noise.
+* **Standardized Agent Skill Manifests:** Publishes dedicated `SKILL.md` instruction files tailored for agent execution environments.
+* **Two-Phase Commit for Financial Actions:** Consequential API operations return `prepared: true` along with a signed `mcp_confirmation_token`. The agent must re-invoke the endpoint with the token and a unique `idempotency_key` to execute the transaction:
+
+```json
+// Phase 1 Response: Prepared State
+{
+  "prepared": true,
+  "mcp_confirmation_token": "eyJhbGciOi...",
+  "action": "create_subscription",
+  "cost_cents": 2500
+}
+```
+
+This prevents single-prompt hallucinated purchase loops, but does not reduce overall connection privileges.
+
+### 3. Production-Only CLI Constraints
+Whop's developer CLI toolchain lacks an isolated local sandbox or dry-run environment; app scaffolding and schema deployments target live production directly. Testing requires maintaining dedicated test businesses.
+
+### 4. The Upstream Data Rights & Catalog Honesty Invariant
+During a clause-level Terms of Service audit of paid agent catalogs (evaluating Whop Marketplace Developer Terms & Conditions and upstream exchange data redistribution policies), reselling scraped third-party market data or exchange signals was determined to be legally and operationally non-viable. All non-proprietary endpoints were decommissioned to HTTP 503 (`CATALOG_UNAVAILABLE`), reinforcing that **agent monetization only works for proprietary, first-party tools with unambiguous IP ownership**.
+
+## What Helped
+
+### 1. Comparative Architecture Breakdown
+
+| Architectural Dimension | Whop Platform (Agent-First Web2) | L402 Tollbooth (Crypto-Native M2M) | Traditional Web2 (Stripe / Gumroad) |
+| :--- | :--- | :--- | :--- |
+| **Settlement Rails** | Visa, MC, Apple/Google Pay, Crypto | Bitcoin Lightning Network (sats) | Visa, Mastercard, PayPal |
+| **Payer Identity** | Human buyer / Team lead | Autonomous AI Agent | Human consumer |
+| **Friction Level** | Low (instant Web2 checkout) | High (requires funded LN node + macaroon) | Low (standard checkout form) |
+| **Agent Accessibility** | Dual MCP servers, raw `.md` mirrors | Automated HTTP 402 challenge handling | None (blocked by Cloudflare/CAPTCHA) |
+| **Observed Conversion** | Proven human willingness to pay | Zero external agent buyer liquidity | Proven human sales channel |
+
+### 2. The Practical Hybrid Monetization Pattern
+To successfully monetize agent software today:
+1. **Settle Capital via Humans:** Use Web2 checkout surfaces (credit cards, Apple Pay) where team managers and developers hold purchasing authority.
+2. **Deliver Capabilities to Agents:** Provide agent-native consumption surfaces (MCP servers, clear JSON schema tools, OpenAPI endpoints, and `.well-known/skills/` definitions).
+3. **Guard High-Impact Actions:** Implement two-phase commit tokens and strict `idempotency_key` headers on all financial execution endpoints to prevent duplicate charges caused by LLM retries.
+
+## Limits
+* **Browser-Based OAuth Privilege Scope:** Whop's MCP server authenticates via browser OAuth granted at the user account level across all associated organizations; fine-grained, per-tool API key scoping is not yet supported.
+* **L402 Future Viability:** As autonomous agent wallets (e.g., Alby / Cashu / WebLN) become standardized in agent runtimes, machine-to-machine micro-fee streaming may achieve viable liquidity.
+
+## Related Field Notes
+* [Lightning Network Peer Discovery & Gossip Storm Prevention](lightning-network-peer-gossip-management.md) — Lightning daemon backend infrastructure and peer topology.
+* [Multi-Agent Relay Architecture: The Cloud Architect to Local Compiler Pattern](multi-agent-relay-architecture.md) — Agent fleet coordination, tool harnesses, and operational bounds.
+* [Agentic Engineering: Managing Long-Running Binary Porting Projects](agent-handoff-and-artifact-gating.md) — State management and preventing runaway agent loops.
+
+## Sources & Credit
+* [Whop Developer Platform Documentation](https://docs.whop.com) and the [Whop llms.txt index](https://docs.whop.com/llms.txt).
+* [Lightning Network L402 / LSAT Protocol Specification](https://docs.lightning.engineering/the-lightning-network/l402).
+* [Model Context Protocol (MCP) Specification](https://modelcontextprotocol.io/).
+
+---
+
+# Android Termux: Native ARM64 Toolchains, Thermal Limits & Wakelocks
+
+## Problem
+Running heavy compute workloads, native C/C++ daemons, or continuous background utilities on modern Android devices typically runs into three major barriers:
+1. **Root & Cross-Compilation Assumptions:** Standard guides assume the device is rooted or require setting up complex Android NDK cross-compilation environments on a separate Linux/x86 host.
+2. **Aggressive OS Deep Sleep (Doze Mode):** Android aggressively suspends background processes. The moment the phone screen locks or the device sits idle on battery, the kernel puts background processes into cgroup freezes, dropping network sockets and pausing worker threads.
+3. **Severe Thermal Throttling on Prime Cores:** Modern mobile SoCs (Qualcomm Snapdragon, MediaTek Dimensity, Google Tensor) feature high thermal density. Saturating all 8 cores forces the thermal governor to throttle CPU clock frequencies down to minimum baseline states (~400–600 MHz) within 90 seconds.
+
+## Environment
+* **Platform:** Android 11+ (ARM64 / aarch64 architecture).
+* **Terminal Environment:** Termux userspace (F-Droid / GitHub releases, not the obsolete Google Play build).
+* **Toolchain:** Clang / LLVM, CMake, `libuv`, OpenSSL, and `termux-tools`.
+
+## What Was Observed
+
+### 1. The Screen-Off Process Freeze & Doze Mode
+When a native CLI binary (such as an encrypted tunnel or background worker) runs in standard Termux without explicit power configurations, locking the phone triggers two distinct power-saving mechanisms:
+1. **Screen-Off Sleep:** The CPU halts execution threads unless a partial wakelock is held.
+2. **Android Doze Mode:** Once the device is stationary on battery, Doze mode ignores userland wakelocks and restricts background network access entirely unless battery optimization is set to "Unrestricted".
+
+```text
+[Screen Locked / User Idle] ──> Android Power Manager ──> cgroup freeze
+                                           │
+                        (Wakelock prevents immediate sleep,
+                         but Doze kills network unless Unrestricted)
+```
+
+### 2. Thermal Runaway on Heterogeneous Core Clusters
+Modern mobile chipsets use heterogeneous **big.LITTLE** or **Tricluster** CPU layouts:
+* 1x "Prime" Core (e.g. Cortex-X3 / X4)
+* 3-4x "Performance" Cores (e.g. Cortex-A715 / A720)
+* 3-4x "Efficiency" Cores (e.g. Cortex-A510 / A520)
+
+Running unconstrained multi-threading (allocating all 8 hardware threads) causes the tiny physical surface of the SoC to reach $\ge 70^\circ\text{C}$ in seconds. The Linux kernel governor triggers emergency thermal throttling, degrading overall compute throughput below what 4 cool cores produce continuously.
+
+## What Helped
+
+### 1. Rootless Native Compilation Bootstrap
+Rather than cross-compiling on a desktop PC and transferring binaries via ADB, the complete Clang/CMake toolchain can be built directly inside unprivileged Termux userspace:
+
+```bash
+# Update and install native ARM64 toolchain
+pkg update -y
+pkg install -y git cmake clang make libuv openssl termux-tools
+
+# Compile directly on device using available threads
+cmake -B build -D CMAKE_BUILD_TYPE=Release
+cmake --build build -j$(nproc)
+```
+
+### 2. Preventing Process Suspension: Wakelocks + Unrestricted Battery
+To ensure worker threads, sockets, and timers execute continuously with the screen turned off:
+1. **Mandatory OS Setting:** In Android system settings (`App Info -> Termux -> Battery`), toggle the battery profile to **"Unrestricted"**. This bypasses Android Doze mode and prevents the system from killing background sockets.
+2. **Acquire Partial Wakelock:** Execute `termux-wake-lock` (provided by `termux-tools`) before launching the background process to prevent the CPU from entering deep sleep:
+   ```bash
+   termux-wake-lock
+   ```
+3. When the workload completes, release the power lock:
+   ```bash
+   termux-wake-unlock
+   ```
+
+### 3. Thermal Budgeting & Thread Partitioning
+Benchmarking on Qualcomm Snapdragon 8-series platforms demonstrated that **thread budgeting beats thread count**:
+
+| Hardware Platform | Total Cores | Recommended Threads | Sustained SoC Temp | Operational Result |
+| :--- | :--- | :--- | :--- | :--- |
+| **8-Core Mobile SoC (Standard)** | 8 | `4` or `5` threads | $38^\circ\text{C} - 42^\circ\text{C}$ | Stable continuous throughput; zero thermal throttling |
+| **8-Core Mobile SoC (Max Effort)**| 8 | `6` threads | $45^\circ\text{C} - 48^\circ\text{C}$ | Moderate warmth; acceptable for short runs |
+| **8-Core Mobile SoC (Unbudgeted)**| 8 | `8` threads | $>70^\circ\text{C}$ | Throttled down to minimum frequency in $<2\text{ min}$ |
+| **SBC (Raspberry Pi 4 / 5)** | 4 | `4` threads | $45^\circ\text{C} - 52^\circ\text{C}$ | Sustained max throughput (with heatsink/fan) |
+
+Leaving 2–3 efficiency cores free allows Android system daemons, display managers, and network interfaces to operate smoothly without competing with worker threads.
+
+## Limits
+* **Non-Root Limitations:** Without root (`su`), users cannot configure hugepages via sysctl (`/proc/sys/vm/nr_hugepages`) or directly write to Model-Specific Registers (MSR). Workloads that depend on hardware prefetcher disabling will operate in software-fallback mode.
+* **Android 12+ Phantom Process Killer:** Android 12+ enforces a global, system-wide cap of 32 total background child processes across all applications (threads do not count toward this limit, but separate child process forks spawned by shells, compilers, or background utilities do). Exceeding this global threshold triggers mass SIGKILL terminations by the OS. This limit cannot be toggled from within Termux and must be configured via ADB from a host computer:
+  * *Android 12:* Run `adb shell "/system/bin/device_config set_sync_disabled_for_tests persistent"` followed by `adb shell "/system/bin/device_config put activity_manager max_phantom_processes 2147483647"`.
+  * *Android 12L / 13+:* Run `adb shell "/system/bin/settings put global settings_enable_monitor_phantom_procs false"`.
+* **Vendor Aggressive Killers:** Certain aggressive OEM Android skins (e.g. MIUI / HyperOS, EMUI) terminate background processes after 30+ minutes regardless of wakelocks unless "Auto-start" and "No restrictions" are toggled in manufacturer settings.
+
+## Related Field Notes
+* [Rabbit R1 Hardware Architecture, Bootloader Unlock & GSI Porting](rabbit-r1-bootloader-unlock-and-gsi.md) — Unlocking BootROM and managing hardware peripherals on ARM64 handhelds.
+* [Headless 24/7 Unattended Disk Unlock (LUKS2 + TPM 2.0)](headless-unattended-disk-unlock-tpm2.md) — Background Linux daemon persistence, boot orchestration, and unattended recovery.
+
+## Sources & Credit
+* [Termux Project Repository](https://github.com/termux/termux-app) and the [termux-api package](https://github.com/termux/termux-api).
+* [Android Open Source Project (AOSP) Power Management Architecture](https://source.android.com/docs/core/power) (`PARTIAL_WAKE_LOCK`).
+
+---
+
+# Provenance & Postmortems: Defunct, Halted, and Superseded Tools Across Console Homebrew, P2P Media, and On-Chain Rails
+
+## 1. The Problem
+When software projects, custom firmware (CFW) ecosystems, P2P relays, or on-chain protocols shut down, pause operations, or break across OS ABI boundaries, documentation usually disappears with them—or worse, old tutorials and hardcoded defaults remain online and quietly break new setups.
+
+Keeping an explicit provenance record of **what broke or halted and what was learned from it** prevents repeating dead routes and preserves technical history.
+
+## 2. Environment
+* **Console Homebrew:** Nintendo Switch 1 (`Horizon OS` up to `22.1.0`, `Atmosphère 1.10–1.11.1`, `libnx 4.10+`) and PowerPC-to-AArch64 static binary recompilation toolchains
+* **Decentralized Media Clients:** `lnbits/napstr` (Rust/Tauri Nostr + Tor audio seeder) and `Stremio 4.4.181` (`EngineFS` / `torrent-stream` Node.js daemon)
+* **On-Chain Bridges & Launchpads:** Bitcoin/Lightning cross-chain swap services (`Boltz`, `Atomiq Labs`) and high-speed Arbitrum Orbit L2 bonding-curve launchpad contracts
+
+## 3. What Was Observed & Provenance Record
+
+### A. Nintendo Switch CFW & Sysmodule Evolution (2018–2026)
+Inspecting and modernizing a long-lived Switch V1 SD card on **Horizon OS 22.1.0 / Atmosphère 1.11.1** exposed three distinct generations of obsolete or incompatible software:
+
+1. **Obsolete CFW Loaders & Legacy Toolkits:**
+   * Early CFW loaders and distribution packages (e.g., `ReiNX`, `KosmosToolbox`, `KosmosUpdater`) are unmaintained and non-functional on modern Horizon firmware.
+2. **Horizon 21.0.0+ / Atmosphère 1.10+ TLS ABI Break (`LNY2`):**
+   * Homebrew binaries compiled against `libnx < 4.10` lack the `LNY2` ABI magic (`0x32594E4C`, revision $\ge 1$) in their `MOD0` section and crash immediately on launch due to Thread-Local Storage (TLS) layout changes.
+   * Legacy Tesla overlays (such as older 2020 overlay builds) fail on FW 19+ and must be replaced by actively maintained forks (e.g., `proferabg/EdiZon-Overlay` v1.0.15).
+3. **System Memory Pool 2 Exhaustion & FW 19+ `ns:ro` Deprecations:**
+   * Running co-resident background sysmodules alongside stock `sys-autopilot` v1.5.0 (`Title ID: 4200000000004150`) triggered boot panics (`Error 2001-0131 / 0x10801` on process `am`) on Atmosphère 1.11.1.
+   * **Measured Cause:** Stock `sys-autopilot` v1.5.0 allocated a `4 MB` inner heap (`0x400000`) plus a `1 MB` static install buffer (`6.69 MB` total ELF / `6.33 MB` BSS), starving Horizon's tight System Memory Pool 2 at boot. Furthermore, calling deprecated `nsGetApplicationControlData` without updated `ns:ro` permissions triggered `std::abort` (`0100000000000034`) on FW 22.1.0.
+
+### B. Hardcoded Dead Relays & Trackers in P2P Clients
+When decentralized networks evolve, hardcoded bootstrap lists turn into self-inflicted denial-of-service vectors:
+
+1. **Unresponsive Nostr Relays in `lnbits/napstr`:**
+   * Upstream default relay lists included unmaintained endpoints (and third-party testing on 2026-08-26 reported repeated HTTP 503s on public relays). Without a health circuit breaker, the client spent sockets and stalled catalogue queries waiting on unresponsive relays. Furthermore, updating a hardcoded constant does not automatically clean up local SQLite databases that have already persisted the old defaults. (Proposed hardening in open upstream PR #2).
+2. **Defunct BitTorrent Trackers in Stremio `EngineFS` (`server.js`):**
+   * Public magnet links routinely carry 15+ dead tracker URLs (e.g., `tracker.example.invalid`, `backup-tracker.example.invalid`).
+   * **Measured Failure:** `EngineFS` ran `peerSearch` every 30 seconds (`setInterval(..., 3e4)`), firing unthrottled DNS lookups for every dead tracker on every cycle. Over a WireGuard VPN tunnel, this exhausted Node.js's `UV_THREADPOOL_SIZE` after ~5 minutes of playback (~63 MB downloaded) and dropped active peer wires to zero.
+
+### C. On-Chain Swap Halts & Bonding-Curve Sniper Observations (Aug–Sept 2026)
+1. **Cross-Chain Bridge Outages (`Boltz` & `Atomiq Labs`):**
+   * On 2026-08-03, `Boltz` announced an indefinite pause on all swap operations, citing escalating automated infrastructure attacks. On 2026-08-12, new operators took over, with swap operations remaining offline during the transition.
+   * On 2026-08-20, `Atomiq Labs` took swap routes offline citing AI-assisted attacks.
+   * Automated cross-chain workflows that assumed a single non-custodial bridge API would remain live indefinitely were blocked until fallback routes (e.g., accountless fixed-quote services, with explicit acknowledgment of their slower confirmation cadence and different trust boundaries) were integrated.
+2. **Launchpad Zero-Dev-Buy Sniper Hypotheses (Empirical On-Chain Test Data):**
+   * Community discussions and trading channels in August 2026 suggested that deploying zero-dev-buy tokens on high-speed bonding-curve launchpad contracts reliably attracted profitable bids from automated MEV sniper bots.
+   * **Our Empirical On-Chain Sample ($N=60$ consecutive factory deployments, $N=24$ zero-dev-buy):**
+     * **87.5% (21/24)** of zero-dev-buy launches in our sample recorded zero subsequent volume (loss of creation fee and gas).
+     * Only **4.17% (1/24)** recorded a Block 0–2 purchase greater than $30.
+     * **Hypotheses:** On sub-second block time L2 rollups, sniper bots appear to use deployer wallet balance heuristics to filter out micro-funded creators, or contract-level early-block anti-frontrunning mechanics disincentivize immediate bidding.
+
+## 4. What Helped
+
+1. **Archive, Don't Delete, Legacy Artifacts (`trash > rm`):**
+   * When cleaning console SD storage, obsolete CFW folders and conflicting sysmodules were moved to a backup archive directory (with device-specific calibration data backed up off-device first) rather than deleted in place.
+2. **Scan Binary Headers for ABI Compatibility:**
+   * Verify the `LNY2` marker in the `MOD0` section of compiled AArch64 homebrew binaries before deploying to modern Horizon firmware, and shrink background sysmodule BSS allocations (`INNER_HEAP_SIZE` reduced from `4 MB` to `512 KB`, reducing total ELF footprint from `6.69 MB` to `2.11 MB`).
+3. **Add Dead-Endpoint Circuit Breakers & Forward Config Migrations:**
+   * In Nostr clients, pair forward schema migrations with a health loop that removes unresponsive relays after consecutive failures.
+   * In BitTorrent streaming daemons (`EngineFS`), cache any tracker hostname returning `ENOTFOUND`, `ENOENT`, or timeout errors for 10 minutes (`600,000 ms`) so dead domains cannot starve the Node.js DNS threadpool.
+4. **Empirically Sample On-Chain Contract Activity Before Building Automation:**
+   * Sample recent contract deployments across block history to measure actual base-rate outcomes before building automation around unverified claims.
+
+## 5. Limits
+* **Ecosystem State Is Dynamic:** Service availability for bridge providers changes over time; check current status pages and operator announcements directly.
+* **Different Trust & Custody Boundaries:** Using an accountless fixed-quote intermediary as a fallback route does not replicate the cryptographic submarine-swap guarantees of non-custodial HTLC/PTLC protocols.
+* **Launchpad Samples Are Bounded:** The 60-launch sample reflects a specific point-in-time snapshot and does not represent all market conditions.
+
+## Related Field Notes
+* [iPod Nano 3G (A1236) Reverse Engineering & Silicon Bringup](a1236-ipod-nano-3g-reverse-engineering.md) — Hardware bringup and bootloader provenance on legacy silicon.
+* [Rabbit R1 Hardware Architecture, Bootloader Unlock & GSI Porting](rabbit-r1-bootloader-unlock-and-gsi.md) — BROM exploits, AVB bypass, and mobile operating system provenance.
+* [Agentic Engineering: Managing Long-Running Binary Porting Projects](agent-handoff-and-artifact-gating.md) — Preserving build provenance across long-term development lifecycles.
+
+## 6. Sources & Credit
+* Switch Homebrew ABI (`LNY2` in `MOD0`) & `libnx` 4.10+ TLS specification: [switchbrew/libnx](https://github.com/switchbrew/libnx) & [Atmosphère-NX](https://github.com/Atmosphere-NX/Atmosphere)
+* Switch `sys-autopilot` slim memory & FW 22.1.0 patches: [TooTallNate/sys-autopilot PR #30](https://github.com/TooTallNate/sys-autopilot/pull/30)
+* Nostr P2P audio client relay hardening: [lnbits/napstr PR #2](https://github.com/lnbits/napstr/pull/2)
+* Boltz Submarine Swaps & Service Updates: [@Boltzhq August 3, 2026 Announcement](https://x.com/Boltzhq/status/2084311537502630319) regarding indefinite pause of swap infrastructure.
+* Atomiq Labs Cross-Chain Protocol: [@atomiqlabs August 20, 2026 Notice](https://x.com/atomiqlabs/status/2090374622357102671) regarding swap routes halt.
+* Launchpad On-Chain Activity: [Arbitrum Orbit L2 Framework](https://docs.arbitrum.io/launch-orbit-chain/orbit-gentle-introduction) (Empirical on-chain test data across 60 consecutive factory launch events)
+
+---
+
+# Headless 24/7 Unattended Disk Unlock (LUKS2 + TPM 2.0)
+
+## Problem
+Running 24/7 headless servers, broadcast workstations, or remote compute nodes with Full Disk Encryption (LUKS2) presents a critical operational challenge: any power interruption, watchdog crash, or automated kernel upgrade leaves the machine halted at an early boot password prompt, requiring manual physical access or out-of-band IP-KVM intervention to enter the disk decryption passphrase.
+
+## Environment
+* **Operating System:** Linux (Arch / systemd-based distributions).
+* **Storage Architecture:** NVMe root volume formatted as LUKS2 (`/dev/nvme0n1p2`).
+* **Hardware Security:** TPM 2.0 Resource Manager (`/dev/tpmrm0`, `tpm_crb_acpi` or `tpm_tis`).
+* **Boot Architecture:** Limine bootloader or systemd-boot executing a Unified Kernel Image (UKI with systemd-stub).
+
+## What Was Observed
+
+### 1. The PCR Policy Tradeoff
+Binding the TPM disk unlock key to Platform Configuration Registers (PCRs) requires balancing security against boot reliability:
+* **The "Zero Security" Trap:** Binding exclusively to **PCR 7** (Secure Boot state) on systems where Secure Boot is disabled provides zero tamper protection; any external boot drive or modified kernel will still release the disk key.
+* **The "Fragile Boot" Trap:** Binding directly to raw kernel or initramfs measurement hashes (**PCR 4** or **PCR 9**) without a cryptographic signature policy causes subsequent kernel updates (`pacman -S linux` or `apt upgrade`) to alter the measured register values. Upon mismatch, the TPM refuses to release the key, halting unattended reboots and falling back to an early-boot interactive passphrase prompt.
+
+```text
+Kernel Update Applied ──> UKI Hash Changes ──> PCR 4/9 Measurement Mismatch ──> TPM Refuses Key ──> Boot Halted
+```
+
+### 2. Initramfs Hook Incompatibilities
+Modern distributions often use custom `mkinitcpio` or `dracut` drop-in configurations. Replacing the legacy busybox `encrypt` hook with `systemd` / `sd-encrypt` can break custom late hooks (such as `btrfs-overlayfs` or ZFS snapshot rollbacks) that expect shell scripts rather than systemd device-mapper targets.
+
+## What Helped
+
+### 1. Mandatory Pre-Flight LUKS Header Backup
+Before enrolling any hardware security tokens into LUKS2 keyslots, dump the metadata header and keyslots to a protected backup image on external/offline storage (or a separate administrative partition):
+
+```bash
+# Backup 16 MB LUKS2 header to an administrative backup directory or external drive
+sudo cryptsetup luksHeaderBackup /dev/nvme0n1p2 \
+  --header-backup-file /mnt/secure-backup/luks-header-pre-tpm.img
+
+# Ensure strict root-only permissions
+sudo chmod 0400 /mnt/secure-backup/luks-header-pre-tpm.img
+```
+
+### 2. Passphrase Verification Across Active Keyslots
+Never attempt TPM key enrollment based on assumptions about passwords or slots. First inspect all active keyslots, then test your human recovery passphrase non-destructively:
+
+```bash
+# 1. Inspect active keyslot assignments (e.g. slot 0 for password)
+sudo cryptsetup luksDump /dev/nvme0n1p2
+
+# 2. Test the human passphrase non-destructively; verbose output (-v) reports which keyslot unlocked
+sudo cryptsetup open --test-passphrase -v /dev/nvme0n1p2
+```
+
+If this command exits with status 0, the human recovery passphrase is confirmed valid before modifying boot configuration.
+
+### 3. Balanced TPM2 Policy Architecture via `systemd-cryptenroll`
+To achieve reliable unattended reboot across kernel updates while protecting against physical drive theft:
+* **Recommended Architecture (Secure Boot + Signed UKI):** Measure **PCR 7** (Secure Boot state) paired with a signed **PCR 11** policy (`systemd-measure`). This allows new kernel updates signed with your private build key to boot unattended without recalculating raw hash registers:
+  ```bash
+  # Enroll TPM 2.0 token with PCR 7 and signed UKI public key
+  sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 \
+    --tpm2-public-key=/etc/systemd/tpm2-pcr-public-key.pem /dev/nvme0n1p2
+  ```
+* **Firmware-Only Baseline (Without UKI signing):** If UKI signature infrastructure is not in place, bind to **PCR 0+2+7**:
+  ```bash
+  sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=0+2+7 /dev/nvme0n1p2
+  ```
+* **Avoid Raw PCR 4/9:** Never bind to literal PCR 4 or PCR 9 hashes without `systemd-measure` signatures, as standard package updates will alter the measurements and require manual passphrase entry.
+
+### 4. Preserving the Human Recovery Slot
+`systemd-cryptenroll` places the sealed hardware secret into an independent keyslot (e.g. Keyslot 1 or 2). **Never delete the primary human passphrase keyslot.** If motherboard firmware is upgraded or BIOS settings are cleared, having the passphrase keyslot intact allows the operator to unlock manually and re-enroll the TPM.
+
+### 5. `crypttab` Configuration
+Update `/etc/crypttab` (or `/etc/crypttab.initramfs` on Arch Linux systems utilizing the `sd-encrypt` initramfs hook) to instruct `systemd-cryptsetup` in the initramfs to attempt TPM unsealing automatically:
+
+```text
+# <target name>  <source device>                             <key file>  <options>
+root             UUID=12345678-1234-1234-1234-123456789abc   none        tpm2-device=auto,discard
+```
+
+## Limits
+* **Bus Sniffing & Physical Interception:** Standard TPM2 unsealing transmits the decrypted volume key across the motherboard SPI/LPC bus during early boot. Without TPM bus encryption (supported in systemd 255+ with signed credentials), dedicated hardware attackers with logic analyzers can theoretically intercept the key during unseal.
+* **Firmware Flashes:** Flashing motherboard UEFI/BIOS firmware alters PCR 0, requiring a human operator to enter the manual recovery password once after the update to re-enroll the TPM.
+
+## Related Field Notes
+* [Single-GPU Dynamic VFIO Passthrough](single-gpu-vfio-passthrough-architecture.md) — Host kernel hooks, Limine UKI configuration, and hardware isolation.
+* [Cross-Play Minecraft Architecture: Geyser & Reverse Tunneling](minecraft-crossplay-geyser-tunneling.md) — 24/7 headless container orchestration.
+* [Android Termux: Native ARM64 Toolchains, Thermal Limits & Wakelocks](android-termux-arm64-toolchain-and-wakelocks.md) — Long-running background daemon persistence.
+
+## Sources & Credit
+* [Arch Linux systemd-cryptenroll Documentation](https://man.archlinux.org/man/systemd-cryptenroll.1.en).
+* [TCG TPM 2.0 PC Client Platform Firmware Profile Specification](https://trustedcomputinggroup.org/resource/pc-client-specific-platform-firmware-profile-specification/).
+* [Limine Bootloader Documentation](https://limine-bootloader.org/).
+
+---
+
+# Lightning Network Peer Discovery & Gossip Storm Prevention
+
+## Problem
+Operating a Bitcoin Lightning Network routing node (such as LND) requires connecting to high-capacity, well-connected routing nodes to maintain an accurate graph view, accelerate pathfinding calculations, and improve payment routing success.
+
+However, attempting to rapidly connect to dozens of high-capacity peers simultaneously triggers massive **gossip storms**:
+1. Newly connected gossip sync peers flood the local node with their view of channel announcements, channel updates, and node announcements.
+2. LND's embedded key-value database (BoltDB / `channel.db`) suffers heavy memory churn, page allocations, and freelist fragmentation.
+3. On resource-constrained hardware (e.g. Raspberry Pi 4/5, RockPi, or virtual private servers with $\le 4\text{ GB}$ RAM), the Linux Out-Of-Memory (OOM) killer abruptly terminates the `lnd` daemon process.
+
+## Environment
+* **Node Implementation:** Lightning Network Daemon (LND v0.17+ / v0.18+).
+* **Platforms:** Umbrel, RaspiBlitz, Start9, Docker containers, and bare-metal Linux.
+* **Toolchain:** Python 3 standard library (zero third-party package dependencies).
+
+## What Was Observed
+
+### 1. BoltDB Freelist Churn During Concurrent Peering
+When 20–40 peer connections are established in rapid succession (e.g., in a tight bash loop calling `lncli connect`), LND's memory resident set size (RSS) escalates rapidly within seconds. 
+
+The following measurements were captured on an 8 GB Raspberry Pi 4 test node running LND v0.17 during an unthrottled burst connection test (internal lab benchmark, 2024):
+
+```text
+Concurrent Peering (No Rate Limiting, Single-Board Computer):
+Time   Active Peers   LND Memory (RSS)   Status
+-------------------------------------------------
+00s    12             340 MB             Normal
+10s    32             1,180 MB           Gossip Flood
+25s    52             3,420 MB           BoltDB Page Churn
+32s    --             OOM Killed         SIGKILL Exit 137
+```
+
+BoltDB memory-maps `channel.db` directly into the process address space. Ingesting dozens of parallel gossip sync streams forces continuous page reallocations, exhausting virtual memory tables before write transactions can commit.
+
+### 2. Upstream API Rate-Limiting
+Automated scripts fetching live node rankings from a single public explorer (e.g., `mempool.space/api/v1/lightning/nodes/rankings/connectivity`) frequently encounter HTTP 429 (Too Many Requests) or Cloudflare CDN challenge pages during network congestion.
+
+## What Helped
+
+### 1. Paced Peer Connection Scheduling
+On our 8 GB Raspberry Pi 4 / LND v0.17 benchmark node, staggering peer connections by **2.5 to 4.0 seconds** kept RSS bounded at ~450–650 MB, versus OOM crashing at ~3.4 GB without pacing, as BoltDB committed incoming gossip transactions into `channel.db` in small incremental batches:
+
+```python
+# connect_peers.py (Excerpt)
+import time
+import subprocess
+import json
+import urllib.request
+
+def connect_peer(pubkey, host, delay_seconds=2.5):
+    target = f"{pubkey}@{host}"
+    cmd = ["lncli", "connect", target]
+    
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    if proc.returncode == 0:
+        print(f"Connected: {pubkey[:16]}... Pacing {delay_seconds}s for gossip sync.")
+    else:
+        print(f"Skip/Failed: {proc.stderr.strip()}")
+        
+    time.sleep(delay_seconds) # Prevents BoltDB memory spikes
+```
+
+### 2. Multi-Mirror Failover Architecture
+To ensure continuous operation without dependency on a single centralized API provider, implement automatic fallback across verified public Mempool instances:
+
+```python
+MEMPOOL_MIRRORS = [
+    "https://mempool.space/api/v1",
+    "https://mempool.emzy.de/api/v1"
+]
+
+def fetch_top_nodes(limit=25):
+    for base_url in MEMPOOL_MIRRORS:
+        endpoint = f"{base_url}/lightning/nodes/rankings/connectivity"
+        try:
+            req = urllib.request.Request(endpoint, headers={"User-Agent": "lnd-peer-sync/1.0"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return json.loads(resp.read().decode())[:limit]
+        except Exception:
+            continue
+    raise RuntimeError("All Mempool API mirrors unreachable.")
+```
+
+### 3. Duplicate Peer Verification
+Before initiating any connection attempt, the local daemon's currently connected peer list (`lncli listpeers`) is queried and cross-referenced. Nodes with existing active channels or open gossip links are skipped, preventing redundant handshake negotiations and log spam.
+
+## Limits
+* **Tor Latency:** Connecting to nodes advertising only Tor `.onion` addresses through the SOCKS5 proxy introduces additional handshake latency (often 5–15 seconds per connection). For onion-heavy nodes, increase connection timeout limits accordingly.
+* **Gossip Invalidation:** Staggered peering stabilizes daemon memory, but does not eliminate network graph decay; stale channel updates must still be pruned periodically by LND's internal channel graph garbage collector.
+
+## Related Field Notes
+* [Autonomous Agent Monetization: Whop MCP vs. L402 Lightning Tollbooths](agent-monetization-whop-mcp-vs-l402-tollbooths.md) — Lightning Network micro-fee settling and autonomous agent paywalls.
+* [Cross-Play Minecraft Architecture: Geyser & Reverse Tunneling](minecraft-crossplay-geyser-tunneling.md) — Managing P2P socket churn and connection rate limits.
+
+## Sources & Credit
+* The open-source [lnd-autoconnect-peers repository](https://github.com/borocode/lnd-autoconnect-peers).
+* [Lightning Network Daemon (LND) Architecture Documentation](https://github.com/lightningnetwork/lnd).
+* [Mempool.space Open Source Lightning API specifications](https://mempool.space/docs/api/rest#get-lightning-nodes-rankings).
+
+---
+
+# Cross-Play Minecraft Architecture: Geyser, Bedrock UDP & Reverse Tunneling
+
+## Problem
+Self-hosting a unified Minecraft server that bridges Java Edition players (PC / Mac) and Bedrock Edition players (Nintendo Switch, mobile, consoles) from residential internet connections presents several technical challenges:
+1. **Transport Protocol Asymmetry:** Java Edition uses persistent TCP streaming (`25565/tcp`), while Bedrock Edition relies on RakNet and NetherNet UDP packet streams (`19132/udp` and `19133/udp`).
+2. **Residential Ingress Barriers:** Carrier-Grade NAT (CGNAT) and residential ISP port blocking prevent direct inbound connections without exposing the home public IP.
+3. **Console Client Constraints:** Consoles (especially Nintendo Switch) restrict users from entering arbitrary server IP addresses or non-standard ports unless using DNS redirection proxies or local subnet LAN broadcasting.
+
+## Environment
+* **Platform:** Docker container (`itzg/minecraft-server:latest`, Java 25 runtime).
+* **Server Software:** PaperMC (high-performance Spigot fork).
+* **Bridge Plugins:** Geyser-Spigot (Bedrock translation proxy), Floodgate (hybrid authentication), ViaVersion / ViaBackwards (multi-version compatibility).
+* **Networking:** Reverse TCP tunnel (`bore`), Cloudflare DNS SRV records.
+
+## What Was Observed
+
+### 1. UDP Packet Fragmentation Over Virtual Tunnels
+Standard HTTP/TCP tunneling tools (such as basic Cloudflare Tunnels) only proxy TCP traffic, completely failing to forward Bedrock's RakNet UDP handshake packets.
+
+### 2. Bedrock Switch Discovery Constraints
+The Nintendo Switch Bedrock client will not display external servers unless they appear under the native **Friends / LAN Games** discovery tab or through a DNS trick. For home network co-op, Bedrock broadcast packets (`19132/udp`) must be explicitly forwarded through the host's physical network adapter.
+
+## What Helped
+
+### 1. Containerized PaperMC & JVM Memory Management
+The server is containerized with explicit memory constraints and Aikar's Garbage Collection optimization flags to eliminate tick spikes during Bedrock chunk translation:
+
+```yaml
+# docker-compose.yml
+services:
+  minecraft:
+    image: itzg/minecraft-server:latest
+    container_name: minecraft-server
+    restart: unless-stopped
+    ports:
+      - "25565:25565/tcp"   # Java Edition
+      - "19132:19132/udp"   # Bedrock RakNet
+      - "19133:19133/udp"   # Bedrock NetherNet
+    environment:
+      TYPE: "PAPER"
+      VERSION: "latest"
+      MEMORY: "3G"
+      JVM_OPTS: "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch"
+      ONLINE_MODE: "true"   # Enforce Mojang authentication for public ingress
+    volumes:
+      - ./data:/data
+```
+
+### 2. Dual-Transport Geyser Configuration
+In `plugins/Geyser-Spigot/config.yml`, configure Geyser to support both legacy RakNet and modern WebRTC/NetherNet transports, binding directly to all available network interfaces:
+
+```yaml
+bedrock:
+  address: 0.0.0.0
+  port: 19132
+  transport: both
+  webrtc-port: 19133
+  clone-remote-port: false
+  auth-type: floodgate    # Secure hybrid Bedrock-Java authentication via Floodgate
+```
+
+> **Security Note:** If running an offline testing server (`online-mode: false` / `auth-type: offline`), strictly isolate the ports to a private LAN. Exposing offline authentication to the public internet allows arbitrary players to connect under an operator's username.
+
+### 3. Public Java Ingress via Reverse TCP Tunnel & DNS SRV
+To allow public Java players to connect from the internet without port forwarding or exposing residential WAN IPs:
+1. Establish a lightweight reverse TCP tunnel using `bore`:
+   ```bash
+   bore local 25565 --to bore.pub
+   # Yields public endpoint: bore.pub:<assigned-port>
+   ```
+2. Create an RFC 2782 DNS **SRV record** at your domain registrar/DNS provider to hide the non-standard port from human players:
+
+| Service | Protocol | Name | Priority | Weight | Port | Target |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `_minecraft` | `_tcp` | `play` | `0` | `5` | `<assigned-port>` | `bore.pub` |
+
+Java Edition players simply type `play.example.com` into their client. The Minecraft client automatically queries DNS for `_minecraft._tcp.play.example.com`, resolves the assigned tunnel port, and establishes the TCP handshake seamlessly.
+
+### 4. Automated Visitor Sandboxing (Adventure Gatekeeper)
+To permit open public visits while protecting the world from griefing without heavy permission plugins:
+* Default world game mode is set to `adventure` (`server.properties: gamemode=adventure`).
+* Players spawn in an isolated obstacle vault.
+* Stepping on a verified checkpoint pressure plate triggers command logic to grant `survival` mode and teleport the player to the open surface world.
+
+## Limits
+* **Bedrock Public Tunneling:** While Java TCP traffic routes cleanly through DNS SRV records and reverse tunnels, Bedrock UDP tunneling requires high-performance UDP reverse proxies (such as `frp` or dedicated VPS WireGuard relays) to avoid MTU packet drop issues.
+* **Redstone & Entity Desync:** Geyser translates packets on the fly; complex redstone machinery operating at 20 ticks/sec or custom Java particle effects can occasionally render with visual jitter on Bedrock clients.
+
+## Related Field Notes
+* [Headless 24/7 Unattended Disk Unlock (LUKS2 + TPM 2.0)](headless-unattended-disk-unlock-tpm2.md) — Unattended host reboot and automated container recovery.
+* [Lightning Network Peer Discovery & Gossip Storm Prevention](lightning-network-peer-gossip-management.md) — Rate-limiting P2P handshakes and socket churn.
+
+## Sources & Credit
+* [GeyserMC Documentation](https://geysermc.org/) and the [Floodgate project](https://github.com/GeyserMC/Floodgate).
+* [PaperMC High-Performance Minecraft Server](https://papermc.io/).
+* [bore CLI reverse tunneling tool](https://github.com/ekzhang/bore).
+* [RFC 2782 DNS SRV Specification](https://datatracker.ietf.org/doc/html/rfc2782).
+
+---
+
+# Multi-Agent Relay Architecture: The Cloud Architect to Local Compiler Pattern
+
+## Problem
+Software engineering workflows utilizing Autonomous AI Agents frequently succumb to two failure modes:
+1. **Monolithic Context Degradation:** Confining an entire project lifecycle (architectural design, code generation, dependency resolution, compilation, and testing) to a single model instance causes context window saturation, leading to hallucinations, repetitive editing loops, and silent code regressions.
+2. **The "Hallucinated Pull Request" Anti-Pattern:** Cloud-only AI agents generate syntactically convincing code via API and assert that "all tests pass." When the pull request is pulled by maintainers, the build fails immediately on native toolchains due to borrow-checker violations, missing platform symbols, or subtle dependency mismatches.
+
+## Environment
+* **Architecture:** Heterogeneous multi-agent coordination across cloud and local execution layers.
+* **Nodes:**
+  * **Cloud Edge Node:** High-velocity architectural spec authoring and GitHub API PR triage.
+  * **Local Compiler Node:** Host-level development terminal running native toolchains (`cargo`, `go`, `python`, `gcc`).
+  * **Host Runtime:** Local developer workspace with isolated repository worktrees.
+
+## What Was Observed
+
+### 1. The Compiler Verification Gap
+Cloud-hosted LLMs do not execute code against actual operating system kernels or native compilers; their assertions of correctness are probabilistic predictions. In complex compiled ecosystems (such as Rust), cloud agents repeatedly generate code that passes visual inspection but violates strict memory-safety invariants:
+
+```text
+# Illustrative diagnostic (demonstrating ownership transfer and borrow-after-move error patterns):
+error[E0382]: borrow of moved value: `client`
+  --> src/daemon.rs:142:18
+   |
+138|     let response = client.post(endpoint).send().await?;
+   |                    ------ `client` moved due to this call
+...
+142|     let retry = client.get(status_url).send().await?;
+   |                 ^^^^^^ value borrowed here after move
+```
+
+If pushed directly to public branches, these hallucinated successes waste human review cycles and break continuous integration (CI) pipelines.
+
+### 2. Autonomous Loop Runaway
+Allowing two autonomous agent instances to communicate directly without human gating often results in conversational death spirals, where agent A hallucinates a solution and agent B hallucinates agreement without either testing the change against disk truth.
+
+## What Helped
+
+### 1. The "Cloud Architect → Local Compiler" Relay Loop
+To eliminate hallucinated PR failures, tasks are partitioned strictly between architectural drafting and local compiler verification:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Human as Human Operator
+    participant Cloud as Cloud Architect Agent
+    participant Remote as GitHub Upstream
+    participant Local as Local Compiler Agent
+    participant Disk as Local Toolchain (cargo/pytest)
+
+    Cloud->>Remote: Drafts architectural fix & pushes branch
+    Human->>Local: "Verify branch on disk"
+    Local->>Remote: Fetches remote branch
+    Local->>Disk: Executes `cargo check` / `cargo test`
+    Disk-->>Local: Emits exact borrow-checker error (E0382)
+    Local-->>Human: Reports exact disk compiler diagnostic
+    Human-->>Cloud: Relays exact compiler output
+    Cloud->>Remote: Pushes targeted fix commit
+    Local->>Disk: Re-runs `cargo test` -> 100% PASS
+    Local-->>Human: Confirmed verified on physical silicon
+```
+
+1. **Cloud Authoring:** The cloud agent specs the cross-file interface and drafts the patch directly to a remote feature branch via GitHub API.
+2. **Local Fetch & Compile:** The local agent checks out the branch on the physical developer machine and executes the native compiler suite (`cargo check --bin daemon`).
+3. **Compiler Interception:** If a compiler error occurs, the local agent isolates the exact line number, compiler error code, and borrow trace directly from disk output.
+4. **Targeted Upstream Patch:** The exact compiler diagnostic is fed back to the cloud agent, which pushes a corrective commit. The local agent verifies the patch on disk before human maintainers are asked to review.
+
+### 2. Core Operational Invariant: Disk Truth Over Model Confidence
+To maintain absolute codebase integrity across agent sessions:
+* **Evidence Rule:** Never claim a test passed, a daemon restarted, or a bug was fixed unless backed by captured command output from the host terminal.
+* **Human Relay Valve:** Keep the human operator as the intentional relay valve between agent nodes, preventing unmoderated agent-to-agent feedback loops.
+* **Identity Containment:** Each agent operates under its native model identity and tool capabilities without role-playing or costume masking.
+
+## Limits
+* **Bandwidth & Latency:** Relaying diagnostics between cloud APIs and local machines introduces several seconds of network latency per turn compared to single-agent local execution.
+* **Environment Divergence:** If the local host's compiler toolchain version differs from the upstream CI runner (e.g. Rust 1.78 locally vs 1.80 on GitHub Actions), toolchain discrepancies must be caught by containerized pre-commit checks.
+
+## Related Field Notes
+* [Agentic Engineering: Managing Long-Running Binary Porting Projects](agent-handoff-and-artifact-gating.md) — State management, handoff manifests, and artifact validation.
+* [Autonomous Agent Monetization: Whop MCP vs. L402 Lightning Tollbooths](agent-monetization-whop-mcp-vs-l402-tollbooths.md) — Tool surfaces, MCP bridges, and transactional boundaries.
+
+## Sources & Credit
+* [Rust Compiler Diagnostics Guide](https://doc.rust-lang.org/error_codes/error-index.html) (`rustc --explain`).
+* [Model Context Protocol (MCP) Specification](https://modelcontextprotocol.io/).
+* [OpenClaw Project Architecture](https://github.com/openclaw).
+
+---
+
+# NVENC Hardware Encoding Architecture & Session Starvation
+
+## Problem
+During continuous multi-day live streaming operations (exceeding 90+ hours of continuous uptime), broadcast applications can encounter abrupt encoder failure:
+
+```text
+NVENC Error: OpenEncodeSessionEx failed: out of memory (NV_ENC_ERR_OUT_OF_MEMORY)
+```
+
+In the NVIDIA Video Codec API, exceeding the driver's concurrent session limit surfaces as `NV_ENC_ERR_OUT_OF_MEMORY`. Once this limit is reached, all subsequent recording, replay buffering, and stream outputs fail immediately, even when total GPU VRAM and 3D graphics compute utilization remain well below 40%.
+
+## Environment
+* **Hardware:** NVIDIA GeForce RTX 3080 Ti (Ampere GA102 architecture).
+* **Driver Architecture:** NVIDIA Game Ready / Studio Drivers (64-bit Windows).
+* **Software:** OBS Studio 64-bit, Twitch Enhanced Broadcasting client, FFmpeg NVENC pipelines.
+
+## What Was Observed
+
+### 1. Artificial Driver Concurrency Limits
+NVIDIA consumer GPUs contain dedicated silicon blocks (NVENC) for video encoding separate from the CUDA graphics cores. On consumer GeForce hardware, the driver enforces an artificial concurrency threshold:
+* Historically capped at 3 simultaneous sessions; increased to 5 in 2023, 8 in early 2024, and up to **12 concurrent sessions** in the newest desktop drivers and Video Codec SDKs.
+* Enterprise Quadro / RTX Professional cards impose no artificial session limits.
+
+### 2. Multi-Track Transcoding Amplification
+Features such as **Twitch Enhanced Broadcasting** shift video transcoding workloads from ingestion servers directly onto the local host. Instead of streaming a single high-bitrate stream, the broadcaster's GPU simultaneously encodes **2 to 5 distinct video tracks** (typically 1440p, 1080p, 720p, 480p, and 360p) across H.264 and HEVC.
+
+On an 8-session limit driver, starting a 5-track broadcast immediately consumes over 60% of the hardware encoder capacity.
+
+### 3. Handle Leakage Over Network Reconnects
+During extended multi-day sessions, transient network disruptions trigger automatic stream renegotiation. In long-running processes, socket reconnect logic can allocate replacement encoder instances before the underlying DirectX / CUDA encoder context has fully torn down the previous instances:
+
+```text
+# Illustrative diagnostic trace: zombie handle accumulation across repeated reconnects
+Session ID    Process    Codec    Resolution    FPS
+---------------------------------------------------
+66, 80, 85    obs64      H.265    2560x1440     0 (hung)
+67, 81, 86    obs64      H.264    1920x1080     0 (hung)
+68, 82        obs64      H.264    1280x720      0 (hung)
+69, 83        obs64      H.264    852x480       0 (hung)
+70, 84        obs64      H.264    640x360       0 (hung)
+Total Active Sessions: 12 (Exceeds hardware cap of 8)
+```
+
+Twelve zombie handles accumulated in driver state, completely starving the hardware encoder pool.
+
+## What Helped
+
+### 1. Live Forensic Diagnostics
+Instead of rebooting the entire operating system, active hardware sessions can be queried in real time:
+
+```powershell
+# 1. Query aggregate GPU encoder load and active session count
+nvidia-smi --query-gpu=name,encoder.stats.sessionCount,encoder.stats.averageFps,encoder.stats.averageLatency --format=csv
+
+# 2. Inspect individual process handles, codecs, and resolutions
+nvidia-smi encodersessions
+```
+
+### 2. Operational Workstation Tuning
+* **Single-Track Direct Encoding:** For mission-critical marathon broadcasts, disable client-side multi-track transcoding in OBS (`Settings -> Stream -> Enable Enhanced Broadcasting: OFF`). A single 1080p60 NVENC pipeline consumes exactly **1 hardware session**, leaving 7 idle slots to absorb background captures and replays.
+* **Process-Level Session Purge:** Terminating the broadcasting parent process immediately causes the NVIDIA kernel driver to release all allocated context handles, returning the active session count to 0 without requiring an OS restart.
+
+## Limits
+* **Driver Enforcement:** Hardware session limits are enforced inside the proprietary NVIDIA kernel driver module (`nvlddmkm.sys`).
+* **Third-Party Driver Patching:** While community binary patches exist to unlock unrestricted sessions on GeForce cards, they require repatching upon every driver update and can cause driver stability regressions during major OS updates.
+
+## Related Field Notes
+* [Single-GPU Dynamic VFIO Passthrough: Hardware Topology & Driver Rebinding](single-gpu-vfio-passthrough-architecture.md) — NVIDIA GPU kernel module lifecycle and hardware isolation.
+* [OBS Studio: Cutting Inactive Browser & Media Source Overhead](obs-inactive-browser-and-media-sources.md) — Auditing and idling non-encoding OBS source overhead.
+* [OBS Open-Mic Acoustic Audio Alignment via FFT Cross-Correlation](obs-acoustic-audio-alignment.md) — Sub-millisecond audio alignment in OBS broadcast production.
+* [Real-Time WebGL Biometric Stream Overlays & Socket Recovery](webgl-hyperate-adrenaline-overlay.md) — WebGL canvas rendering and live GPU compositing load.
+* [PowerShell: Why `.ProcessorAffinity` Fails on Bit 31 (`0x80000000`)](powershell-processor-affinity-sign-extension.md) — Process pinning and CPU affinity management for high-load broadcast workloads.
+
+## Sources & Credit
+* [NVIDIA Video Codec SDK Documentation](https://developer.nvidia.com/video-codec-sdk) (`NV_ENC_ERR_OUT_OF_MEMORY` error handling).
+* [OBS Studio Project source code](https://github.com/obsproject/obs-studio) (FFmpeg NVENC output plugin).
+
+---
+
+# OBS Open-Mic Acoustic Audio Alignment via FFT Cross-Correlation
+
+## Problem
+Broadcasters and audio engineers operating open studio microphones alongside live monitor speakers frequently encounter delayed speaker playback bleeding into the microphone feed. Typical workarounds suffer from severe audio degradation:
+* **Aggressive Noise Gates:** Cut off trailing sentences, natural room reverb, and quiet breathing.
+* **Software Echo Cancellation (AEC):** Introduces robotic comb-filtering, flanging phase artifacts, and dynamic CPU overhead.
+* **Manual "Clap" Calibration:** Eyeballing visual waveforms in video editors yields multi-millisecond errors due to sample rate conversion and frame quantization.
+
+## Environment
+* **Platform:** Windows 64-bit workstation.
+* **Software:** OBS Studio (64-bit), OBS WebSocket v5 API, Python 3 with `scipy.signal` and `numpy`.
+* **Audio Routing:** Windows WASAPI / CoreAudio default output, multi-track audio recording (Track 2: Mic/Aux; Track 4: Clean Desktop Audio).
+
+## What Was Observed
+
+### 1. Packet Timestamp Discontinuities During Live Edits
+When adjusting the "Sync Offset" property live in OBS via WebSocket or the Advanced Audio Properties panel, OBS does not re-encode previous buffer frames; instead, it injects presentation timestamp (PTS) discontinuities into the container stream.
+
+Standard raw PCM decoders reading linear samples from disk discard these container PTS jumps, causing subsequent correlation math to measure incorrect cumulative offsets:
+
+```text
+Container PTS: [0.000s] ----> [Live Offset Edit +15ms] ----> [0.015s discontinuity]
+Raw PCM Reader: Assumes continuous linear stream -> Drift error propagates
+```
+
+### 2. Within-Take vs. Between-Take Repeatability
+Repeatedly re-initializing the Windows playback audio graph (`SoundPlayer` / media APIs) introduced 10–25 ms of random startup jitter across different recording takes. True acoustic alignment requires analyzing one continuous multi-track take with a looped test signal rather than separate short file takes.
+
+## What Helped
+
+### 1. High-Frequency Logarithmic Chirp Signals
+Rather than using impulse clicks or voice claps, the calibration routine generates four quiet 400–2600 Hz logarithmic sine sweeps (chirps). A logarithmic chirp distributes energy evenly per octave (pink noise spectrum), creating a sharp mathematical autocorrelation peak when cross-correlated against room recordings.
+
+### 2. Timeline Reconstruction with FFmpeg `aresample`
+To correctly evaluate audio files containing live OBS offset adjustments, the audio stream must be decoded through an asynchronous resampler that honors presentation timestamps:
+
+```bash
+ffmpeg -i recording.mkv -map 0:a:0 -af "aresample=async=1:min_hard_comp=0.001:first_pts=0" -f wav mic.wav
+ffmpeg -i recording.mkv -map 0:a:1 -af "aresample=async=1:min_hard_comp=0.001:first_pts=0" -f wav desktop.wav
+```
+
+`aresample=async=1` inserts silence or trims samples dynamically to lock the output audio samples strictly to the container's PTS timeline.
+
+### 3. FFT Cross-Correlation Analysis
+Using `scipy.signal.fftconvolve`, the clean reference chirp is cross-correlated against both the desktop track and the microphone track:
+
+```python
+import numpy as np
+from scipy import signal
+from scipy.io import wavfile
+
+def find_delay(reference_wav, recorded_wav):
+    sr_ref, ref_data = wavfile.read(reference_wav)
+    sr_rec, rec_data = wavfile.read(recorded_wav)
+    
+    # Compute cross-correlation via FFT
+    correlation = signal.fftconvolve(rec_data, ref_data[::-1], mode='full')
+    peak_sample = np.argmax(np.abs(correlation))
+    
+    # Calculate time offset in milliseconds
+    delay_ms = ((peak_sample - (len(ref_data) - 1)) / sr_rec) * 1000.0
+    return delay_ms
+```
+
+### 4. Verified Settings Result
+After running the automated correlation loop:
+* **Desktop Audio Sync Offset:** `+8 ms`
+* **Mic / Aux Sync Offset:** `0 ms`
+* **Resulting Relative Arrival:** `-0.083 ms` (mic relative to desktop, within $\le 0.1\text{ ms}$ sub-millisecond acoustic tolerance).
+
+The speaker soundwave reaches the microphone diaphragm simultaneously with the direct desktop audio stream, eliminating perceived echo in the final mix without applying any gating or digital suppression filters.
+
+## Limits
+* **Integer Offset Granularity in OBS:** While FFT cross-correlation measures relative arrival down to sub-sample precision (e.g. `-0.083 ms`), OBS Studio's Advanced Audio Properties Sync Offset field accepts only integer millisecond values (e.g. `+8 ms`). Any residual sub-millisecond arrival delta ($<1\text{ ms}$) is well below the threshold of human echo perception and phase distortion in voice mixes.
+* **Physical Distance Dependent:** Sound travels in air at approximately $343\text{ m/s}$ ($\approx 0.029\text{ ms per cm}$, or $\approx 2.9\text{ ms per meter}$). If the physical distance between the monitor speakers and the microphone changes significantly, the physical acoustic delay changes accordingly.
+* **Audio Driver Clock Drift:** Over multi-day sessions, separate USB audio interfaces and onboard motherboard DACs can experience microscopic hardware crystal oscillator drift.
+
+## Related Field Notes
+* [NVENC Hardware Encoding Architecture & Session Starvation](nvenc-hardware-encoding-architecture.md) — GPU encoder session allocation and broadcast pipeline limits.
+* [OBS Studio: Cutting Inactive Browser and Media Source Overhead](obs-inactive-browser-and-media-sources.md) — Auditing and toggling inactive OBS sources over WebSocket.
+* [Real-Time WebGL Biometric Stream Overlays & Socket Recovery](webgl-hyperate-adrenaline-overlay.md) — WebGL canvas rendering and OBS scene composition.
+
+## Sources & Credit
+* [FFmpeg Filter Documentation](https://ffmpeg.org/ffmpeg-filters.html#aresample-1) for `aresample` async timestamp synchronization.
+* [SciPy Signal Processing Documentation](https://docs.scipy.org/doc/scipy/reference/signal.html) for FFT cross-correlation (`scipy.signal.fftconvolve`).
+
+---
+
+# OBS Studio: Cutting Inactive Browser and Media Source Overhead via `obs-websocket`
+
+## 1. The Problem
+On a streaming workstation running OBS Studio with a large scene collection accumulated over months of streaming (measured from our own studio profile), OBS was holding roughly **3.7 GB of working-set memory** (`obs64.exe` plus child processes), **25,000+ OS handles**, and **21 separate `obs-browser-page.exe` child processes** even while sitting idle on a single scene without streaming or recording.
+
+In addition, the OBS log file (`%APPDATA%\obs-studio\logs`) showed continuous background network connection attempts every few seconds to local RTMP, SRT, and HTTP camera endpoints that were currently powered off.
+
+## 2. Environment
+* **OS:** Windows 11 (64-bit)
+* **Application:** OBS Studio (64-bit, `obs64.exe`) with built-in `obs-browser` (Chromium Embedded Framework) and `obs-websocket` v5 enabled (`127.0.0.1:4455`)
+* **Scene Collection Size:** Large broadcast profile with 20+ scenes containing over 20 browser and media inputs
+
+## 3. What Was Observed
+Inspecting the latest OBS startup/session log and querying the live input settings over `obs-websocket` (`GetInputList` + `GetInputSettings`) revealed three distinct sources of background resource consumption:
+
+1. **Persistent Chromium Browser Sources (`shutdown: false`):**
+   Out of 11 browser sources across the scenes, 9 were visual overlays or web embeds (e.g., remote camera feeds, chat overlays, status widgets, and web pages left in secondary scenes) that had **Shutdown source when not visible** (`shutdown`) unset or set to `false`. One older scene's browser source was stuck on an interactive challenge page, continuously executing JavaScript in the background.
+2. **Inactive Network Media Sources Polling Offline Endpoints (`close_when_inactive: false`):**
+   Six `ffmpeg_source` inputs pointed to network streams (`rtmp://<LAN_OR_VPN_HOST>/...`, `srt://<LAN_HOST>:<PORT>`, `http://<LAN_HOST>/webcam`) that were offline during normal desktop use. Because `close_when_inactive` was `false`, OBS kept polling and failing to connect in the background regardless of which scene was active.
+3. **Duplicate and Legacy Scene Items in the Primary Scene:**
+   The primary scene had accumulated over 30 top-level scene items (over 45 including group children), including multiple disabled or overlapping capture layers from older hardware setups.
+
+## 4. What Helped
+
+### Step 1: Audit Browser and Media Sources via `obs-websocket` v5
+Instead of clicking through dozens of scenes manually in the UI, we queried `obs-websocket` using Python (`websocket-client`) to list every `browser_source` and `ffmpeg_source` and inspect its current settings.
+
+> **Important before modifying settings:** `SetInputSettings` over `obs-websocket` updates OBS's live scene collection state, which OBS persists to `%APPDATA%\obs-studio\basic\scenes\<CollectionName>.json`. Back up that `.json` file before running bulk changes.
+
+```python
+# Inspect browser_source and ffmpeg_source lifecycle flags via obs-websocket v5
+# Requires: pip install websocket-client
+import base64, hashlib, json, websocket
+
+OBS_WS_URL = "ws://127.0.0.1:4455"
+OBS_WS_PASSWORD = "<YOUR_OBS_WEBSOCKET_PASSWORD>"
+
+def connect_obs():
+    ws = websocket.create_connection(OBS_WS_URL, timeout=5)
+    hello = json.loads(ws.recv())
+    auth_info = hello["d"].get("authentication")
+    identify = {"op": 1, "d": {"rpcVersion": 1}}
+    if auth_info:
+        secret = base64.b64encode(
+            hashlib.sha256((OBS_WS_PASSWORD + auth_info["salt"]).encode()).digest()
+        ).decode()
+        auth = base64.b64encode(
+            hashlib.sha256((secret + auth_info["challenge"]).encode()).digest()
+        ).decode()
+        identify["d"]["authentication"] = auth
+    ws.send(json.dumps(identify))
+    ws.recv()  # Identified (op 2)
+    return ws
+
+def call_obs(ws, request_type, request_data=None, req_id="1"):
+    payload = {"op": 6, "d": {"requestType": request_type, "requestId": req_id}}
+    if request_data:
+        payload["d"]["requestData"] = request_data
+    ws.send(json.dumps(payload))
+    while True:
+        msg = json.loads(ws.recv())
+        if msg.get("op") == 7 and msg["d"]["requestId"] == req_id:
+            status = msg["d"].get("requestStatus", {})
+            if not status.get("result", False):
+                code = status.get("code")
+                comment = status.get("comment", "Unknown error")
+                raise RuntimeError(f"OBS request '{request_type}' failed ({code}): {comment}")
+            return msg["d"].get("responseData", {})
+
+# Audit current settings across all browser and media inputs
+ws = connect_obs()
+try:
+    for kind in ("browser_source", "ffmpeg_source"):
+        inputs = call_obs(ws, "GetInputList", {"inputKind": kind}).get("inputs", [])
+        for item in inputs:
+            name = item["inputName"]
+            settings = call_obs(ws, "GetInputSettings", {"inputName": name}).get("inputSettings", {})
+            print(kind, name, {
+                "shutdown": settings.get("shutdown"),
+                "close_when_inactive": settings.get("close_when_inactive"),
+                "is_local_file": settings.get("is_local_file"),
+            })
+finally:
+    ws.close()
+```
+
+### Step 2: Apply Targeted Lifecycle Settings
+We enabled `shutdown: true` on the 9 visual browser sources while deliberately **excluding** audio-critical sources (such as TTS readers and stream alert boxes that need to play sound or stay connected across scene switches). For inactive `ffmpeg_source` inputs, enabling `close_when_inactive: true` stops background decoder threads and socket reconnect loops when the source is not rendered:
+
+> **Prerequisite:** This snippet relies on the `connect_obs` and `call_obs` helper functions defined in Step 1. Run it in the same Python session after Step 1, or include those function definitions at the top of your script.
+
+```python
+# Apply lifecycle updates across audited sources
+VISUAL_BROWSER_SOURCES = [
+    # Replace with the exact inputName values from your audit
+    "Example Visual Overlay",
+    "Example Remote Camera Ninja",
+]
+
+INACTIVE_MEDIA_SOURCES = [
+    # Replace with inactive background video loops or offline network feeds
+    "Example Network Stream",
+    "Example Background Video",
+]
+
+ws = connect_obs()
+try:
+    for name in VISUAL_BROWSER_SOURCES:
+        call_obs(ws, "SetInputSettings", {
+            "inputName": name,
+            "inputSettings": {"shutdown": True},
+            "overlay": True,
+        })
+        print(f"Set shutdown=True on: {name}")
+
+    for name in INACTIVE_MEDIA_SOURCES:
+        call_obs(ws, "SetInputSettings", {
+            "inputName": name,
+            "inputSettings": {"close_when_inactive": True},
+            "overlay": True,
+        })
+        print(f"Set close_when_inactive=True on: {name}")
+finally:
+    ws.close()
+```
+
+### Observed Result on This Machine
+Immediately after applying those settings (without restarting OBS or switching the active scene):
+* `obs-browser-page.exe` child process count dropped from **21 to 12**.
+* Cumulative working-set memory across `obs64.exe` and its Chromium helper processes dropped from **~3,724 MB to ~1,478 MB** (measured via Windows Task Manager / `Get-Process` working set as CEF discarded inactive page contexts).
+* Background TCP/SRT reconnect warnings in the OBS log stopped for the inactive network media sources.
+
+### Rollback
+Either restore your backed-up scene collection `.json` file while OBS is closed, or run `SetInputSettings` with `{"shutdown": False}` / `{"close_when_inactive": False}` (`"overlay": True`) for any source that needs to stay warm in the background.
+
+## 5. Limits
+* **Single-Machine Memory Figures:** The drop from `3,724 MB` to `1,478 MB` reflects the specific pages loaded in those 9 Chromium instances and OS working-set reclamation at that moment; savings will vary depending on how heavy your browser sources are.
+* **Scene Transition Reload Delay:** When `shutdown: true` is enabled on a `browser_source`, switching to a scene that uses it (or toggling its visibility on) forces Chromium to reload the URL from scratch. This causes a brief blank/pop-in delay and resets any in-page JavaScript state.
+* **WebRTC / VDO.Ninja Re-Handshake:** Enabling `shutdown: true` on a VDO.Ninja browser source disconnects the WebRTC peer connection when you leave the scene. If you switch back and forth frequently during a live broadcast, keep `shutdown: false` on active camera feeds during the stream and only shut down unused scenes.
+* **Audio and Alert Overlays:** Do **not** set `shutdown: true` on browser sources that play audio cues, TTS, or event alerts across scenes unless they are present and visible in every scene you use.
+
+## Related Field Notes
+* [NVENC Hardware Encoding Architecture & Session Starvation](nvenc-hardware-encoding-architecture.md) — Monitoring GPU encoder session limits and preventing handle leaks.
+* [Real-Time WebGL Biometric Stream Overlays & Socket Recovery](webgl-hyperate-adrenaline-overlay.md) — Handling browser source lifecycles and scene group alpha in OBS.
+* [OBS Open-Mic Acoustic Audio Alignment via FFT Cross-Correlation](obs-acoustic-audio-alignment.md) — Time-aligning speaker output with microphone input in OBS scenes.
+
+## 6. Sources & Credit
+* [OBS Studio `obs-websocket` 5.x Protocol Documentation](https://github.com/obsproject/obs-websocket/blob/master/docs/generated/protocol.md) (`GetInputList`, `GetInputSettings`, `SetInputSettings`)
+* [OBS Browser Plugin (`obs-browser`) Source & Settings Reference](https://github.com/obsproject/obs-browser)
+
+---
+
+# PowerShell: Why `.ProcessorAffinity` Fails with `"The parameter is incorrect"` on Bit 31 (`0x80000000`)
+
+## 1. The Problem
+On a 16-core / 32-thread Windows system (logical processors 0 through 31), we wanted to pin a noisy background service to the last two logical processors (threads 30 and 31, bitmask `0xC0000000`) using PowerShell:
+
+```powershell
+$proc.ProcessorAffinity = [IntPtr]0xC0000000
+```
+
+Instead of pinning the process, PowerShell threw:
+
+```text
+Exception setting "ProcessorAffinity": "The parameter is incorrect"
+```
+
+However, changing the mask to threads 28 and 29 (`[IntPtr]0x30000000`) worked immediately without error.
+
+## 2. Environment
+* **OS:** Windows 11 (64-bit)
+* **CPU:** 16 cores / 32 logical processors (valid system affinity mask: `0x00000000FFFFFFFF`)
+* **Shells Tested:**
+  * Windows PowerShell 5.1 (64-bit and 32-bit `SysWOW64`)
+  * PowerShell 7 (`pwsh`, 64-bit)
+
+## 3. What Was Observed
+
+### Disproven Initial Hypothesis: 32-Bit WOW64 Target Process
+Because the target background binary was a 32-bit WOW64 process, our first hypothesis was that Windows or .NET rejected bit 31 (`0x80000000`) specifically when setting affinity on a 32-bit WOW64 process.
+
+When we tested `[IntPtr]0xC0000000` on a native **64-bit** PowerShell process, however, it failed with the exact same error:
+
+```powershell
+$p = [System.Diagnostics.Process]::GetCurrentProcess()
+$p.ProcessorAffinity = [IntPtr]0xC0000000
+# Exception setting "ProcessorAffinity": "The parameter is incorrect"
+```
+
+### Actual Root Cause: Signed 32-Bit Hex Parsing + 64-Bit `IntPtr` Sign Extension
+Inspecting how PowerShell parses `0xC0000000` and converts it to `[IntPtr]` revealed the real mechanism:
+
+```powershell
+PS> (0xC0000000).GetType().FullName
+System.Int32
+
+PS> 0xC0000000
+-1073741824
+
+PS> "0x{0:X16}" -f ([IntPtr]0xC0000000).ToInt64()
+0xFFFFFFFFC0000000
+```
+
+1. In PowerShell, an unsuffixed hex literal from `0x80000000` to `0xFFFFFFFF` has bit 31 set, so PowerShell parses it as a **negative 32-bit signed integer (`System.Int32`)**.
+2. In a 64-bit PowerShell session (`[IntPtr]::Size -eq 8`), casting `[IntPtr]0xC0000000` invokes the `IntPtr(int value)` constructor, which **sign-extends** the negative 32-bit integer into a 64-bit value: `0xFFFFFFFFC0000000`.
+3. When `.ProcessorAffinity` passes `0xFFFFFFFFC0000000` to Win32 `SetProcessAffinityMask`, bits **32 through 63** are all set to `1`.
+4. On a 32-logical-processor CPU, logical processors 32–63 do not exist (the system affinity mask is `0x00000000FFFFFFFF`). `SetProcessAffinityMask` rejects any mask containing bits outside the system affinity mask with `ERROR_INVALID_PARAMETER` (`"The parameter is incorrect"`).
+
+Why did `0x30000000` work? Because bit 31 is `0`, so `0x30000000` parses as a positive `System.Int32` (`805306368`) and zero-extends to `0x0000000030000000`.
+
+## 4. What Helped
+
+Append the **`L` suffix** (`0xC0000000L` or `0x80000000L`) so PowerShell parses the literal as a 64-bit `System.Int64` (`3221225472`) before casting to `[IntPtr]`:
+
+```powershell
+PS> "0x{0:X16}" -f ([IntPtr]0xC0000000L).ToInt64()
+0x00000000C0000000
+```
+
+We verified that `[IntPtr]0xC0000000L` succeeds from 64-bit PowerShell on **both** 64-bit processes and 32-bit WOW64 processes:
+
+```powershell
+# Verified working on both 64-bit and 32-bit WOW64 target processes:
+$proc.ProcessorAffinity = [IntPtr]0xC0000000L
+```
+
+### Rollback
+To restore a process to all available logical processors in its current processor group (up to 64):
+
+```powershell
+$count = [Math]::Min([Environment]::ProcessorCount, 64)
+$fullMask = if ($count -eq 64) { [IntPtr](-1L) } else { [IntPtr]((1L -shl $count) - 1L) }
+$proc.ProcessorAffinity = $fullMask
+```
+
+## 5. Limits
+* **32-Bit PowerShell Sessions (`SysWOW64`):** In a 32-bit PowerShell process (`[IntPtr]::Size -eq 4`), `[IntPtr]` is 32 bits wide, so `[IntPtr]0xC0000000` works without `L`, while `[IntPtr]0xC0000000L` throws `Arithmetic operation resulted in an overflow` because `3221225472` exceeds `Int32.MaxValue`. If a script must run in both 32-bit and 64-bit hosts, construct the mask safely or check `[Environment]::Is64BitProcess`.
+* **Systems With >64 Logical Processors:** Windows systems with more than 64 logical processors use multiple Processor Groups (`SetThreadGroupAffinity` / `GetProcessGroupAffinity`). `.ProcessorAffinity` only operates on the process's current processor group (up to 64 logical processors) and bit 63 (`0x8000000000000000`) is still signed in `Int64`.
+* **Permissions:** Changing `.ProcessorAffinity` on an elevated or `LocalSystem` service requires running PowerShell as Administrator; otherwise .NET throws `Access is denied`.
+
+## Related Field Notes
+* [Single-GPU Dynamic VFIO Passthrough: Hardware Topology & Driver Rebinding](single-gpu-vfio-passthrough-architecture.md) — CPU core masking and CCX chiplet pinning in virtualization.
+* [NVENC Hardware Encoding Architecture & Session Starvation](nvenc-hardware-encoding-architecture.md) — Process resource allocation and driver management.
+
+## 6. Sources & Credit
+* [Microsoft Docs: `Process.ProcessorAffinity` Property](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.process.processoraffinity)
+* [Microsoft Win32 Docs: `SetProcessAffinityMask` Function (`ERROR_INVALID_PARAMETER` behavior)](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setprocessaffinitymask)
+* [PowerShell Language Specification: Integer Literals & Type Suffixes](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_numeric_literals)
+
+---
+
+# Rabbit R1 Hardware Architecture, Bootloader Unlock & GSI Porting
+
+> **Warning:** Unlocking the bootloader irrevocably wipes all user data and carries a risk of permanently bricking the device if the preloader, partition table, or BROM state is corrupted. Always create and verify a complete physical flash dump via BROM mode before attempting any modifications.
+
+## Problem
+The Rabbit R1 is a dedicated AI handheld device designed to run a single proprietary launcher (`com.rabbit.r1.launcher`) on top of an Android 13 AOSP base. Users seeking to run standard Android, postmarketOS, or hardened custom ROMs encounter:
+1. No official bootloader unlock tokens or manufacturer developer portals.
+2. Android Verified Boot (AVB 2.0 / `dm-verity`) preventing modifications to system partitions.
+3. Proprietary hardware controls for the 360° motorized rotating camera lens and scroll wheel.
+
+## Environment
+* **Hardware:** Rabbit R1 Handheld.
+* **SoC:** MediaTek Helio P35 (`MT6765`) — 8-core ARM Cortex-A53.
+* **Memory & Storage:** 4 GB LPDDR4X, 128 GB eMMC 5.1.
+* **Display:** 2.88-inch TFT touchscreen (240x282 resolution).
+* **Base Architecture:** Project Treble ARM64 A/B (system-as-root), dynamic `super` partition.
+* **Host Toolchain:** Linux / macOS / Windows with Python 3, `mtkclient`, and Android platform-tools (`fastboot`, `adb`).
+
+## What Was Observed
+
+### 1. BROM Exploit Vulnerability
+Because the device runs on the MediaTek MT6765 chipset, its BootROM is vulnerable to the standard SLA/DA handshake bypass in `mtkclient`. Physical access to the hardware enables full BootROM access without requiring software authorization or developer credentials:
+
+* Holding the **Push-To-Talk (PTT)** button while plugging the USB-C cable into a host PC forces the SoC into MediaTek BROM mode (`0e8d:0003`).
+
+### 2. Verified Boot Enforcement
+Stock images strictly enforce cryptographic signature validation via `vbmeta`. Any modification to the `system` or `boot` partitions without disabling AVB results in a boot loop at the initial splash screen (`dm-verity verification failed`).
+
+## What Helped
+
+### 1. Bootloader Unlock via BROM
+Using `mtkclient`, the security configuration partition (`seccfg`) can be overwritten directly from BROM mode:
+
+```bash
+# 1. Clone mtkclient and install dependencies
+git clone https://github.com/bkerler/mtkclient.git
+cd mtkclient
+pip install -r requirements.txt
+
+# 2. Enter BROM mode (hold PTT button while connecting USB-C)
+# 3. Dump full stock firmware backup (CRITICAL recovery fallback)
+python mtk.py rl r1_stock_backup/
+
+# 4. Write bootloader unlock flag to seccfg
+python mtk.py da seccfg unlock
+
+# 5. Transition to fastboot mode (using mtkbootcmd.py from r1_escape)
+python mtkbootcmd.py FASTBOOT
+
+# 6. Disable Android Verified Boot via fastboot flags
+fastboot flash --disable-verity --disable-verification vbmeta vbmeta.img
+```
+
+### 2. Flashing Treble Generic System Images (GSI)
+Because the R1 adheres to Google's Project Treble standard on Android 13, it boots generic ARM64 A/B system images without requiring device-specific kernel recompilation:
+
+```bash
+# 1. Transition from bootloader to userspace fastbootd
+fastboot reboot fastboot
+
+# 2. Flash target GSI system image to the dynamic partition
+fastboot flash system lineage-21.0-arm64-bvN.img
+
+# 3. Wipe userdata to clear cached proprietary launcher states
+fastboot -w
+
+# 4. Reboot into the new operating system
+fastboot reboot
+```
+
+### 3. Peripheral Hardware Adaptation
+* **Screen Resolution & DPI:** Set the window manager density to ensure UI elements scale correctly on the 240x282 display:
+  ```bash
+  adb shell wm density 160
+  ```
+* **Motorized Camera Lens:** The 360° rotating 8 MP camera is driven by an internal stepper motor. Community tooling (`r1_escape`) provides automated bootloader unlock and Treble GSI flashing scripts; full camera rotation and dynamic angle positioning under generic Android requires vendor camera HAL integration or reverse-engineered motor control daemons.
+
+## Limits
+* **Kernel Mainlining:** The MT6765 relies on a downstream MediaTek 4.19 / 5.4 Board Support Package (BSP) kernel with proprietary HAL blobs. Upstream mainline Linux kernel support requires reverse-engineering power management IC (PMIC) and display DSI timings.
+* **Pixel-Specific OS Restrictions:** Distributions strictly tied to Google Titan M2 hardware attestation (such as upstream GrapheneOS) cannot run natively on MediaTek silicon; hardened AOSP GSI builds with sandboxed microG and hardened malloc provide the closest functional alternative.
+
+## Related Field Notes
+* [Android Termux: Native ARM64 Toolchains, Thermal Limits & Wakelocks](android-termux-arm64-toolchain-and-wakelocks.md) — Running native compute and managing process execution on ARM64 Android runtimes.
+* [iPod Nano 3G (A1236) Reverse Engineering & Silicon Bringup](a1236-ipod-nano-3g-reverse-engineering.md) — BootROM exploitation and low-level peripheral mapping.
+* [Provenance & Postmortems: Defunct Tools & Protocols](defunct-protocols-and-homebrew-provenance.md) — Bootloader security, legacy console homebrew, and ABI breaks.
+
+## Sources & Credit
+* B. Kerler ([mtkclient](https://github.com/bkerler/mtkclient)) for the MediaTek BROM exploit implementation.
+* AndyCGYan and the [Phh-Treble community](https://github.com/phhusson/treble_experimentations) for ARM64 GSI development.
+* The open-source [RabbitHoleEscapeR1/r1_escape repository](https://github.com/RabbitHoleEscapeR1/r1_escape) for unlock and flash automation scripts.
+
+---
+
+# Single-GPU Dynamic VFIO Passthrough: Hardware Topology & Driver Rebinding
+
+> **Scope Notice:** This document is an architectural post-mortem and hardware topology breakdown drawn from physical bare-metal testing, **not a universal step-by-step tutorial**. Single-GPU VFIO passthrough depends strictly on your motherboard's IOMMU group isolation, UEFI firmware behavior, and display manager lifecycle. Do not execute driver unbind commands without an active out-of-band SSH session.
+
+## Problem
+Many software engineers and gamers want to use Linux as their daily operating system while retaining access to Windows for kernel-level anti-cheat games or specialized Windows-only hardware suites. Traditional solutions present severe friction:
+1. **Dual-Booting:** Requires completely closing all open development environments, terminal sessions, and background compilers to reboot into a separate OS.
+2. **Dual-GPU Passthrough:** Requires buying a secondary graphics card, consuming motherboard PCIe lanes, increasing power draw, and adding physical video switchers or Looking Glass software capture overhead.
+3. **Standard Virtualization:** Emulated virtual GPUs lack DirectX 12 / Vulkan feature parity and trigger anti-cheat VM detection flags.
+
+## Environment
+* **CPU:** AMD 16-Core / 32-Thread Dual-CCD processor (e.g. Ryzen 9 5950X, Zen 3 architecture).
+* **Motherboard:** AMD X570 chipset platform (SVM + IOMMU enabled).
+* **GPU:** NVIDIA GeForce RTX 30-series (e.g. RTX 3080 Ti, Ampere GA102 architecture, Device ID `10de:2208`).
+* **RAM:** 64 GB DDR4.
+* **Host OS:** Arch Linux (Kernel 6.10+, Wayland / Hyprland, Limine bootloader).
+* **Guest OS:** Windows 11 Pro (KVM / QEMU / OVMF UEFI, Q35 machine type).
+
+## What Was Observed
+
+### 1. Cross-CCX Latency Spikes in Gaming
+The Ryzen 9 5950X contains two physical Core Complex Dies (CCDs) connected via Infinity Fabric. If a virtual machine's vCPUs are assigned randomly across both CCDs, threads communicating across the Infinity Fabric interconnect suffer a 3x cache latency penalty ($\approx 10\text{ ns}$ L3 intra-CCD vs. $\approx 30\text{ ns}$ inter-CCD), resulting in micro-stutter and frame-time jitter in competitive games.
+
+### 2. Driver Unbind Lockups (`nvidia_drm` in use)
+Attempting to unbind the NVIDIA kernel driver while the display manager (SDDM/Hyprland) is running or while the Linux console framebuffer (`efi-framebuffer`) holds a hardware lock causes the Linux kernel to panic or hang indefinitely:
+
+```text
+# Illustrative kernel diagnostic: unbinding while display manager or framebuffer holds active context
+rmmod: ERROR: Module nvidia_drm is in use
+rmmod: ERROR: Module nvidia_modeset is in use
+Kernel: [Hardware lockup; display frozen at black screen]
+```
+
+### 3. `INACCESSIBLE_BOOT_DEVICE` on Raw NVMe Boot
+Passing an existing bare-metal Windows installation on a raw NVMe partition (`/dev/nvme0n1p3`) directly to QEMU via a VirtIO-SCSI controller crashes Windows with a Blue Screen of Death (BSOD `INACCESSIBLE_BOOT_DEVICE`) unless Red Hat VirtIO storage drivers are pre-installed into the Windows Driver Store.
+
+## What Helped
+
+### 1. Execution Lifecycle: The Single-GPU Rebinding Loop
+A single orchestrator script manages the complete transition without rebooting the physical machine:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Linux User
+    participant Host as Linux Host (Arch)
+    participant Driver as NVIDIA Kernel Driver
+    participant VFIO as vfio-pci Stub
+    participant VM as Windows 11 QEMU VM
+
+    User->>Host: Launch Windows VM script
+    Host->>Host: 1. Stop Display Manager (SDDM / Hyprland)
+    Host->>Host: 2. Unbind VT consoles (vtcon0, efi-framebuffer)
+    Host->>Driver: 3. Unload nvidia_drm, nvidia_modeset, nvidia
+    Host->>VFIO: 4. Bind RTX 3080 Ti (10de:2208) to vfio-pci
+    Host->>VM: 5. QEMU starts with pinned CCD1 cores & raw NVMe
+    Note over VM: User games in Windows 11 at 100% bare-metal GPU speed
+    User->>VM: Shuts down Windows Guest
+    VM-->>Host: QEMU process exits cleanly
+    Host->>VFIO: 6. Unbind RTX 3080 Ti from vfio-pci
+    Host->>Driver: 7. Reload nvidia_drm, nvidia_modeset, nvidia
+    Host->>Host: 8. Re-bind vtcon0 & restart Display Manager
+    Host-->>User: Desktop reappears on Linux with all work preserved
+```
+
+### 2. Pre-VM Teardown Hook Script
+Before QEMU initializes, the host display pipeline is detached in exact sequence:
+
+```bash
+#!/usr/bin/env bash
+# /etc/libvirt/hooks/qemu.d/win11/prepare/begin/start.sh
+
+# 1. Terminate desktop display manager
+systemctl stop sddm.service
+
+# 2. Unbind virtual terminal consoles and EFI framebuffers
+echo 0 > /sys/class/vtconsole/vtcon0/bind
+echo 0 > /sys/class/vtconsole/vtcon1/bind
+echo efi-framebuffer.0 > /sys/bus/platform/drivers/efi-framebuffer/unbind 2>/dev/null
+
+# 3. Sleep briefly to allow memory buffers to flush
+sleep 2
+
+# 4. Unload all NVIDIA driver kernel modules
+modprobe -r nvidia_drm nvidia_modeset nvidia_uvm nvidia
+
+# 5. Bind GPU VGA and Audio controllers to vfio-pci
+virsh nodedev-detach pci_0000_0a_00_0
+virsh nodedev-detach pci_0000_0a_00_1
+```
+
+### 3. CPU Chiplet Topology Pinning (Ryzen 5950X)
+To eliminate cross-CCX cache latency:
+* **CCD0 (Cores 0–7 / Threads 0–7 & 16–23):** Reserved exclusively for Linux host background tasks, compilers, and system daemons.
+* **CCD1 (Cores 8–15 / Threads 8–15 & 24–31):** Pinned 1:1 to QEMU vCPUs for the Windows guest:
+
+```xml
+<vcpu placement='static'>16</vcpu>
+<cputune>
+  <vcpupin vcpu='0' cpuset='8'/>
+  <vcpupin vcpu='1' cpuset='24'/>
+  <vcpupin vcpu='2' cpuset='9'/>
+  <vcpupin vcpu='3' cpuset='25'/>
+  <!-- ... Cores 10-15 mapped to Threads 26-31 ... -->
+  <emulatorpin cpuset='0-7,16-23'/>
+</cputune>
+<cpu mode='host-passthrough' check='none'>
+  <topology sockets='1' dies='1' cores='8' threads='2'/>
+</cpu>
+```
+
+### 4. Storage & VirtIO Integration
+To allow the same Windows partition (`/dev/nvme0n1p3`) to boot both bare-metal and inside KVM:
+1. Boot Windows bare-metal once to install drivers and set storage services to boot-critical (`Start=0`):
+   ```cmd
+   REM Install drivers into the Windows Driver Store
+   pnputil /add-driver viostor.inf /install
+   pnputil /add-driver vioscsi.inf /install
+   pnputil /add-driver netkvm.inf /install
+
+   REM Configure VirtIO SCSI storage service as boot-critical (Start = 0)
+   reg add "HKLM\SYSTEM\CurrentControlSet\Services\vioscsi" /v Start /t REG_DWORD /d 0 /f
+   reg add "HKLM\SYSTEM\CurrentControlSet\Services\viostor" /v Start /t REG_DWORD /d 0 /f
+   ```
+   *Fallback Alternative:* If manual registry addition fails or permissions are restricted, attaching a temporary secondary virtual disk backed by VirtIO-SCSI to the VM while booting Windows once via an emulated SATA/IDE controller causes Windows Device Manager to detect the controller and configure the service entries automatically.
+2. In QEMU, attach the partition using `virtio-scsi` with discard enabled:
+   ```xml
+   <disk type='block' device='disk'>
+     <driver name='qemu' type='raw' cache='none' io='native' discard='unmap'/>
+     <source dev='/dev/nvme0n1p3'/>
+     <target dev='sda' bus='scsi'/>
+   </disk>
+   ```
+3. A udev rule in Linux prevents the host from ever mounting `nvme0n1p3` while QEMU is running, eliminating filesystem corruption.
+
+### 5. Post-VM Recovery Hook Script
+When QEMU terminates, the GPU is returned to the Linux kernel:
+
+```bash
+#!/usr/bin/env bash
+# /etc/libvirt/hooks/qemu.d/win11/release/end/revert.sh
+
+# 1. Re-attach GPU devices to host driver control
+virsh nodedev-reattach pci_0000_0a_00_0
+virsh nodedev-reattach pci_0000_0a_00_1
+
+# 2. Reload NVIDIA kernel modules
+modprobe nvidia
+modprobe nvidia_modeset
+modprobe nvidia_drm
+modprobe nvidia_uvm
+
+# 3. Rebind virtual terminal consoles
+echo 1 > /sys/class/vtconsole/vtcon0/bind
+echo 1 > /sys/class/vtconsole/vtcon1/bind
+
+# 4. Restart desktop display manager
+systemctl start sddm.service
+```
+
+## Limits
+* **Motherboard IOMMU Grouping:** This setup requires that the primary PCIe x16 slot resides in an isolated IOMMU group. If the GPU shares an IOMMU group with the PCIe root complex or onboard SATA controllers, passthrough fails without the ACS override kernel patch.
+* **Emergency SSH Requirement:** If a driver teardown script encounters a syntax error or a hung process, the physical display will remain black. An active SSH daemon on a secondary laptop or phone on the local LAN is mandatory during initial setup to inspect `journalctl -xe`.
+
+## Related Field Notes
+* [NVENC Hardware Encoding Architecture & Session Starvation](nvenc-hardware-encoding-architecture.md) — GPU encoder session allocation and driver boundaries.
+* [Headless 24/7 Unattended Disk Unlock (LUKS2 + TPM 2.0)](headless-unattended-disk-unlock-tpm2.md) — Limine bootloader, kernel hooks, and disk orchestration.
+* [PowerShell Processor Affinity Sign Extension](powershell-processor-affinity-sign-extension.md) — CPU core masking and affinity assignment.
+
+## Sources & Credit
+* [ArchWiki PCI Passthrough via OVMF](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF).
+* [QEMU VirtIO Device Architecture Documentation](https://www.qemu.org/docs/master/system/devices/virtio/index.html).
+* [Red Hat VirtIO Drivers for Windows](https://github.com/virtio-win/virtio-win-pkg-scripts).
+
+---
+
+# Real-Time WebGL Biometric Stream Overlays & Socket Recovery
+
+## Problem
+Live broadcasting setups displaying real-time biometric telemetry (such as Bluetooth Low Energy heart rate data) over a full-canvas WebGL browser source encounter two critical failure modes:
+1. **Silent WebSocket Zombie Connections:** Upstream telemetry WebSocket servers frequently continue exchanging transport-level ping/pong heartbeats even when the underlying Bluetooth peripheral has disconnected or stopped pushing biometric frames. The browser source remains technically "connected," but the visual overlay remains frozen at a stale reading indefinitely.
+2. **OBS Scene Group Alpha Compounding:** When a full-screen ($2560 \times 1440$) WebGL browser source is organized inside an OBS Scene Group that has an opacity filter applied, standard browser source rendering double-multiplies alpha channels, washing out color saturation and causing unnecessary compositing load.
+
+## Environment
+* **Platform:** Linux / Windows streaming workstations running OBS Studio (64-bit).
+* **Source:** 2D/3D WebGL Canvas (`2560 x 1440` transparent viewport).
+* **Protocol:** WebSockets (WSS) streaming JSON biometric telemetry from BLE heart rate devices (e.g., HypeRate API).
+
+## What Was Observed
+
+### 1. The "Ghost Socket" Deadlock
+During multi-hour broadcasts, if a heart rate sensor drops off the network (e.g. battery swap, sleep mode), the WebSocket connection stays open in the browser runtime. Because the server continues transmitting transport ping frames, standard `onclose` and `onerror` event listeners never fire:
+
+```text
+[Sensor Powered Off] 
+         │
+         ▼
+[Upstream Gateway] ──(HTTP/WS Ping/Pong Active)──> [OBS Browser Source]
+         │                                                    │
+(Zero HR telemetry packets)                                    ▼
+                                                     (Shader frozen at 94 BPM forever)
+```
+
+### 2. Scene Graph Opacity Inconsistencies
+OBS Scene Groups allow broadcasters to adjust group-level visibility. However, applying a `0.28` opacity filter to a parent Group containing a WebGL browser source diminishes translucent shader layers non-linearly, rendering procedural depth effects completely invisible.
+
+## What Helped
+
+### 1. Dual-Threshold Watchdog with Hard Socket Termination
+To eliminate zombie sockets without requiring human intervention or an OBS restart, a client-side freshness watchdog was implemented in JavaScript:
+* **Soft Timeout (60 Seconds):** If no fresh telemetry frame arrives within 60 seconds, the shader smoothly fades all border elements to alpha 0.0, hiding stale metrics from the stream.
+* **Hard Reset (90 Seconds):** If 90 seconds elapse without a valid reading, the script explicitly calls `socket.close()`. This deliberate termination triggers the client's automated backoff-and-reconnect handler, re-subscribing cleanly to the upstream gateway:
+
+```javascript
+// Telemetry Freshness & Zombie Socket Watchdog
+let lastReadingTimestamp = Date.now();
+const STALE_HIDE_MS = 60000;
+const ZOMBIE_KILL_MS = 90000;
+
+function onTelemetryPacket(data) {
+  if (data && data.heartRate > 0) {
+    lastReadingTimestamp = Date.now();
+    updateShaderUniforms(data.heartRate);
+  }
+}
+
+setInterval(() => {
+  const elapsed = Date.now() - lastReadingTimestamp;
+  
+  if (elapsed >= ZOMBIE_KILL_MS) {
+    console.warn("Telemetry socket zombie detected. Forcing socket termination.");
+    lastReadingTimestamp = Date.now(); // Prevent repeat calls in same cycle
+    if (activeSocket) {
+      activeSocket.close(); // Triggers automated onclose reconnection
+    }
+  } else if (elapsed >= STALE_HIDE_MS) {
+    fadeOverlayToZero();
+  }
+}, 5000);
+```
+
+### 2. URL-Driven Group Opacity Compensation
+Rather than hardcoding opacity values into the shader, the browser source URL accepts a dynamic `groupOpacity` query parameter:
+
+```text
+file:///path/to/overlay.html?view=graph&groupOpacity=0.28
+```
+
+The WebGL fragment shader normalizes internal alpha calculations inversely against the parent container's opacity multiplier (`effectiveAlpha = targetAlpha / groupOpacity`), preserving correct color saturation and translucent layering regardless of OBS scene hierarchy.
+
+### 3. Procedural Multi-Plane Shader Architecture
+To keep GPU utilization minimal across 60 FPS live rendering at $2560 \times 1440$:
+* The center of the canvas is discarded in the fragment shader (`discard` instruction) when distance from the edge exceeds threshold, aborting downstream framebuffer and alpha blend writes for ~80% of the screen area.
+* Telemetry pulses are rendered as smoothed procedural sine curves rather than loading external texture atlases, avoiding VRAM bandwidth bottlenecks.
+
+## Limits
+* **Browser Source Process Isolation:** If the underlying Chromium Embedded Framework (CEF) crashes, OBS must be told to refresh the browser source cache via the OBS WebSocket `PressInputPropertiesButton` API.
+* **Network Flaps During Reconnect:** Rapid back-to-back reconnections can trigger rate limits on public telemetry gateways; a 3–5 second exponential backoff jitter should be maintained.
+
+## Related Field Notes
+* [OBS Studio: Cutting Inactive Browser & Media Source Overhead](obs-inactive-browser-and-media-sources.md) — Auditing and managing browser source memory overhead.
+* [OBS Open-Mic Acoustic Audio Alignment via FFT Cross-Correlation](obs-acoustic-audio-alignment.md) — Synchronizing audio and video production pipelines.
+* [NVENC Hardware Encoding Architecture & Session Starvation](nvenc-hardware-encoding-architecture.md) — Managing GPU encoding load during live broadcasts.
+
+## Sources & Credit
+* [Chromium Embedded Framework (CEF) Documentation](https://github.com/chromiumembedded/cef) for browser source architecture.
+* [HypeRate WebSocket API specification](https://www.hyperate.io/).
